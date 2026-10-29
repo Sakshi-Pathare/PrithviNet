@@ -1,0 +1,7 @@
+@echo off
+echo Stopping TerraPulse processes...
+taskkill /F /IM uvicorn.exe /T 2>nul
+taskkill /F /IM node.exe /T 2>nul
+echo TerraPulse processes stopped.
+pause
+

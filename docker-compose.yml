@@ -1,0 +1,51 @@
+services:
+  postgis:
+    image: postgis/postgis:16-3.4
+    container_name: terrapulse-postgis
+    environment:
+      POSTGRES_DB: terrapulse
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgrespassword
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgis_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d terrapulse"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: terrapulse-backend
+    environment:
+      DATABASE_URL: postgresql+psycopg2://postgres:postgrespassword@postgis:5432/terrapulse
+      MAPBOX_ACCESS_TOKEN: ${MAPBOX_ACCESS_TOKEN:-}
+      DEBUG: "True"
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/uploads:/app/uploads
+    depends_on:
+      postgis:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: terrapulse-frontend
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://localhost:8000
+      - VITE_MAPBOX_TOKEN=${MAPBOX_ACCESS_TOKEN:-}
+    depends_on:
+      - backend
+
+volumes:
+  postgis_data:
+

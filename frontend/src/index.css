@@ -1,0 +1,265 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ─────────────────────────────────────────────────────────────
+   BASE
+───────────────────────────────────────────────────────────── */
+body {
+  background-color: #F5F2EB;
+  color: #2C4A3E;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6, .font-display {
+  font-family: 'Space Grotesk', system-ui, sans-serif;
+  color: #2C4A3E;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   SCROLLBAR
+───────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #EFECE4; }
+::-webkit-scrollbar-thumb { background: #7C9D8E; border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: #587B6C; }
+
+/* ─────────────────────────────────────────────────────────────
+   GLASSMORPHISM CARD SYSTEM
+───────────────────────────────────────────────────────────── */
+
+/* Light glass — for cards on beige background */
+.glass-card {
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  box-shadow: 0 8px 32px rgba(44, 74, 62, 0.07), inset 0 1px 0 rgba(255,255,255,0.65);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.glass-card:hover {
+  background: rgba(255, 255, 255, 0.85);
+  border-color: rgba(124, 157, 142, 0.45);
+  box-shadow: 0 16px 48px rgba(44, 74, 62, 0.12), inset 0 1px 0 rgba(255,255,255,0.75);
+  transform: translateY(-2px);
+}
+
+/* Sage-tinted glass — for accent cards */
+.glass-card-sage {
+  background: rgba(232, 239, 234, 0.65);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  border: 1px solid rgba(124, 157, 142, 0.3);
+  box-shadow: 0 8px 32px rgba(88, 123, 108, 0.1), inset 0 1px 0 rgba(255,255,255,0.5);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.glass-card-sage:hover {
+  background: rgba(232, 239, 234, 0.85);
+  border-color: rgba(88, 123, 108, 0.5);
+  box-shadow: 0 16px 40px rgba(88, 123, 108, 0.18), inset 0 1px 0 rgba(255,255,255,0.6);
+  transform: translateY(-2px);
+}
+
+/* Dark glass — for overlays on map */
+.glass-dark {
+  background: rgba(22, 45, 45, 0.75);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(124, 157, 142, 0.2);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(124,157,142,0.15);
+  transition: all 0.3s ease;
+}
+.glass-dark:hover {
+  background: rgba(27, 58, 58, 0.85);
+  border-color: rgba(124, 157, 142, 0.35);
+}
+
+/* Legacy class - kept for compatibility */
+.glass-card-frosted {
+  background: rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  box-shadow: 0 8px 32px rgba(44, 74, 62, 0.07);
+  transition: all 0.3s ease;
+}
+.glass-card-frosted:hover {
+  border-color: rgba(124, 157, 142, 0.45);
+  box-shadow: 0 16px 48px rgba(44, 74, 62, 0.12);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   BADGE SYSTEM
+───────────────────────────────────────────────────────────── */
+.badge-sage {
+  background: rgba(232, 239, 234, 0.8);
+  color: #2C4A3E;
+  border: 1px solid rgba(124, 157, 142, 0.4);
+  backdrop-filter: blur(8px);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   SHIMMER LOADING EFFECT
+───────────────────────────────────────────────────────────── */
+.shimmer-loading {
+  background: linear-gradient(
+    90deg,
+    rgba(239, 236, 228, 0) 0%,
+    rgba(255, 255, 255, 0.5) 50%,
+    rgba(239, 236, 228, 0) 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.8s linear infinite;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   INTERACTIVE POST CARD
+───────────────────────────────────────────────────────────── */
+.post-card {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(226, 221, 209, 0.7);
+  box-shadow: 0 4px 24px rgba(44, 74, 62, 0.06);
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: slide-up 0.4s ease-out both;
+}
+.post-card:hover {
+  background: rgba(255, 255, 255, 0.95);
+  border-color: rgba(124, 157, 142, 0.4);
+  box-shadow: 0 12px 40px rgba(44, 74, 62, 0.12);
+  transform: translateY(-3px);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   MAP PAGE — DARK TEAL THEME
+───────────────────────────────────────────────────────────── */
+.map-canvas {
+  background: linear-gradient(160deg, #0F2020 0%, #162D2D 40%, #1B3A3A 70%, #1A3333 100%);
+}
+
+.map-grid {
+  background-image:
+    linear-gradient(rgba(124, 157, 142, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(124, 157, 142, 0.06) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+.map-pin {
+  filter: drop-shadow(0 4px 12px rgba(0,0,0,0.5));
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.map-pin:hover, .map-pin.active {
+  filter: drop-shadow(0 6px 20px rgba(124, 157, 142, 0.6));
+}
+
+/* ─────────────────────────────────────────────────────────────
+   MAPBOX POPUP OVERRIDES
+───────────────────────────────────────────────────────────── */
+.mapboxgl-popup-content {
+  background: rgba(22, 45, 45, 0.9) !important;
+  color: #E8EFEA !important;
+  border: 1px solid rgba(124, 157, 142, 0.35) !important;
+  border-radius: 16px !important;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.4) !important;
+  padding: 0 !important;
+  overflow: hidden;
+  backdrop-filter: blur(20px) !important;
+}
+.mapboxgl-popup-anchor-top .mapboxgl-popup-tip { border-bottom-color: rgba(22, 45, 45, 0.9) !important; }
+.mapboxgl-popup-anchor-bottom .mapboxgl-popup-tip { border-top-color: rgba(22, 45, 45, 0.9) !important; }
+.mapboxgl-popup-close-button {
+  color: rgba(232, 239, 234, 0.6) !important;
+  font-size: 18px !important;
+  padding: 6px 10px !important;
+}
+.mapboxgl-popup-close-button:hover { color: #E8EFEA !important; }
+
+/* ─────────────────────────────────────────────────────────────
+   BUTTONS
+───────────────────────────────────────────────────────────── */
+.btn-sage {
+  background: linear-gradient(135deg, #7C9D8E 0%, #587B6C 100%);
+  color: white;
+  box-shadow: 0 4px 16px rgba(88, 123, 108, 0.35);
+  transition: all 0.2s ease;
+}
+.btn-sage:hover {
+  background: linear-gradient(135deg, #8DAE9F 0%, #68917E 100%);
+  box-shadow: 0 6px 24px rgba(88, 123, 108, 0.5);
+  transform: translateY(-1px);
+}
+.btn-sage:active { transform: scale(0.97); }
+
+/* ─────────────────────────────────────────────────────────────
+   STAT BAR TICKER
+───────────────────────────────────────────────────────────── */
+.ticker-track {
+  display: flex;
+  width: max-content;
+  animation: ticker-scroll 30s linear infinite;
+}
+.ticker-track:hover { animation-play-state: paused; }
+
+/* ─────────────────────────────────────────────────────────────
+   PAGE TRANSITIONS
+───────────────────────────────────────────────────────────── */
+.page-enter {
+  animation: fade-scale 0.35s ease-out both;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   REWARD CARD
+───────────────────────────────────────────────────────────── */
+.reward-card {
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(226, 221, 209, 0.65);
+  box-shadow: 0 4px 20px rgba(44, 74, 62, 0.06);
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: slide-up 0.4s ease-out both;
+}
+.reward-card:hover {
+  background: rgba(255, 255, 255, 0.96);
+  border-color: rgba(124, 157, 142, 0.4);
+  box-shadow: 0 12px 40px rgba(44, 74, 62, 0.12);
+  transform: translateY(-4px);
+}
+
+/* ─────────────────────────────────────────────────────────────
+   KEYFRAMES (defined in Tailwind config, mirrored here for CSS)
+───────────────────────────────────────────────────────────── */
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+@keyframes slide-up {
+  0% { transform: translateY(12px); opacity: 0; }
+  100% { transform: translateY(0); opacity: 1; }
+}
+@keyframes fade-scale {
+  0% { transform: scale(0.97); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+@keyframes pulse-ring {
+  0% { transform: scale(1); opacity: 0.7; }
+  100% { transform: scale(2.5); opacity: 0; }
+}
+@keyframes map-ripple {
+  0% { transform: scale(1); opacity: 0.55; }
+  100% { transform: scale(3.2); opacity: 0; }
+}
+@keyframes ticker-scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}
+@keyframes glow-pulse {
+  0%, 100% { box-shadow: 0 0 10px rgba(124,157,142,0.25); }
+  50% { box-shadow: 0 0 28px rgba(124,157,142,0.6); }
+}
