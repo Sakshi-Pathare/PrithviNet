@@ -25,6 +25,14 @@ h1, h2, h3, h4, h5, h6, .font-display {
 ::-webkit-scrollbar-thumb { background: #7C9D8E; border-radius: 99px; }
 ::-webkit-scrollbar-thumb:hover { background: #587B6C; }
 
+/* Hide scrollbar utility for mobile horizontal chips */
+.scrollbar-none::-webkit-scrollbar { display: none; }
+.scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+
+.safe-area-pb {
+  padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 0.5rem));
+}
+
 /* ─────────────────────────────────────────────────────────────
    GLASSMORPHISM CARD SYSTEM
 ───────────────────────────────────────────────────────────── */

@@ -117,8 +117,8 @@ export default function UploadModal({ isOpen, onClose, onPostCreated, user, onTo
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in">
-      <div className="relative w-full max-w-lg rounded-3xl bg-white border border-[#E2DDD1] shadow-xl p-6 sm:p-8">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/40 backdrop-blur-sm animate-in fade-in">
+      <div className="relative w-full max-w-lg max-h-[92vh] overflow-y-auto rounded-2xl sm:rounded-3xl bg-white border border-[#E2DDD1] shadow-2xl p-4 sm:p-7">
         
         {/* Modal Header */}
         <div className="flex items-center justify-between pb-4 border-b border-[#E2DDD1]">

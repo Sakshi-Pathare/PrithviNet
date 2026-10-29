@@ -64,8 +64,8 @@ export default function App() {
         <CommunityStatsBar />
       </div>
 
-      {/* ── Main Content ── */}
-      <main className="flex-1 w-full relative z-10">
+      {/* ── Main Content Area (with bottom padding for mobile navigation) ── */}
+      <main className="flex-1 w-full relative z-10 pb-20 md:pb-8">
 
         {activeTab === 'feed' && (
           <div className="page-enter">
