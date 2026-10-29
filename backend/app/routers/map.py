@@ -30,6 +30,13 @@ def get_map_points(
     points = []
     for post, user in records:
         group_name = user.community_group.group_name if user.community_group else "Neighborhood Volunteer"
+        cat_prefix = {
+            "Tree Planting": "TRE",
+            "Clean-up Drive": "CLN",
+            "Solar Energy": "SOL",
+            "Composting": "COM",
+            "Cycling / Walking": "CYC"
+        }.get(post.category, "ACT")
 
         points.append(
             MapPoint(
@@ -46,7 +53,8 @@ def get_map_points(
                 group_name=group_name,
                 photo_url=post.photo_url,
                 status=post.status,
-                timestamp=post.timestamp
+                timestamp=post.timestamp,
+                action_code=f"PUN-{cat_prefix}-{post.id:03d}"
             )
         )
 

@@ -73,6 +73,7 @@ class MapPoint(BaseModel):
     photo_url: str
     status: str
     timestamp: datetime
+    action_code: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
 
