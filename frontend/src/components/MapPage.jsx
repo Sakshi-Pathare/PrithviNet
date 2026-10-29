@@ -1,22 +1,28 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  MapPin, 
-  Leaf, 
-  Sparkles, 
-  CheckCircle2, 
-  Users, 
-  Plus, 
-  Clock, 
-  ChevronRight,
-  Compass
-} from 'lucide-react';
+import { MapPin, Leaf, CheckCircle2, Users, Plus, Compass, ZoomIn, ZoomOut, X } from 'lucide-react';
 import { fetchMapPoints } from '../api';
+
+const CATEGORY_EMOJIS = {
+  'Tree Planting': '🌱',
+  'Clean-up Drive': '🧹',
+  'Solar Energy': '☀️',
+  'Composting': '🍂',
+  'Cycling / Walking': '🚲',
+};
+
+const PIN_POSITIONS = [
+  { left: '18%', top: '30%' }, { left: '42%', top: '20%' },
+  { left: '68%', top: '35%' }, { left: '78%', top: '58%' },
+  { left: '30%', top: '62%' }, { left: '55%', top: '70%' },
+  { left: '12%', top: '72%' }, { left: '88%', top: '25%' },
+];
 
 export default function MapPage({ onOpenUploadModal }) {
   const [points, setPoints] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [activePoint, setActivePoint] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [zoom, setZoom] = useState(1);
 
   useEffect(() => {
     let isMounted = true;
@@ -39,30 +45,59 @@ export default function MapPage({ onOpenUploadModal }) {
   }, [selectedCategory]);
 
   const categories = [
-    { id: 'all', label: 'All Community Actions' },
-    { id: 'Tree Planting', label: '🌱 Tree Planting' },
-    { id: 'Clean-up Drive', label: '🧹 Clean-up Drive' },
-    { id: 'Solar Energy', label: '☀️ Solar Energy' },
-    { id: 'Composting', label: '🍂 Composting' },
-    { id: 'Cycling / Walking', label: '🚲 Clean Travel' }
+    { id: 'all', label: 'All Spots' },
+    { id: 'Tree Planting', label: '🌱 Trees' },
+    { id: 'Clean-up Drive', label: '🧹 Clean-up' },
+    { id: 'Solar Energy', label: '☀️ Solar' },
+    { id: 'Composting', label: '🍂 Compost' },
+    { id: 'Cycling / Walking', label: '🚲 Cycling' },
   ];
 
   return (
-    <div className="relative w-full h-[calc(100vh-70px)] bg-[#EFECE4] overflow-hidden flex flex-col font-sans">
-      
-      {/* Top Filter Bar */}
-      <div className="absolute top-4 left-4 right-4 z-20 flex flex-wrap items-center justify-between gap-3 pointer-events-none">
-        
-        {/* Category Filter Pills */}
-        <div className="flex items-center gap-1.5 overflow-x-auto p-1.5 rounded-2xl bg-white/95 backdrop-blur-md border border-[#E2DDD1] pointer-events-auto shadow-sm max-w-full">
+    <div className="relative w-full h-[calc(100vh-70px)] overflow-hidden map-canvas">
+
+      {/* ── Map Grid Overlay ── */}
+      <div className="absolute inset-0 map-grid opacity-100 pointer-events-none" />
+
+      {/* ── Ambient Glow Orbs (deep teal atmosphere) ── */}
+      <div className="absolute top-1/4 left-1/3 w-96 h-96 rounded-full bg-[#1F4040]/40 blur-3xl pointer-events-none" />
+      <div className="absolute bottom-1/4 right-1/4 w-80 h-80 rounded-full bg-[#162D2D]/60 blur-3xl pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full bg-[#0F2020]/30 blur-[80px] pointer-events-none" />
+
+      {/* ── Concentric Range Rings ── */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+        {[600, 420, 260, 140].map((size, i) => (
+          <div
+            key={size}
+            className="absolute rounded-full border border-[#7C9D8E]/10"
+            style={{ width: size, height: size, opacity: 0.6 - i * 0.12 }}
+          />
+        ))}
+        {/* Animated pulse ring */}
+        <div className="absolute w-40 h-40 rounded-full border border-[#7C9D8E]/30"
+          style={{ animation: 'map-ripple 3s ease-out infinite' }} />
+        <div className="absolute w-40 h-40 rounded-full border border-[#7C9D8E]/20"
+          style={{ animation: 'map-ripple 3s ease-out infinite 1.5s' }} />
+      </div>
+
+      {/* ── Scan Line Effect ── */}
+      <div
+        className="absolute left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#7C9D8E]/25 to-transparent pointer-events-none"
+        style={{ animation: 'scan-line 4s linear infinite' }}
+      />
+
+      {/* ── Top Filter Bar ── */}
+      <div className="absolute top-4 left-4 right-4 z-20 flex flex-wrap items-center justify-between gap-3">
+        {/* Category pills */}
+        <div className="flex items-center gap-1.5 overflow-x-auto p-1.5 rounded-2xl glass-dark backdrop-blur-xl border border-[#7C9D8E]/20 max-w-full pointer-events-auto shadow-lg">
           {categories.map(cat => (
             <button
               key={cat.id}
               onClick={() => setSelectedCategory(cat.id)}
-              className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all ${
+              className={`px-3.5 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all duration-200 ${
                 selectedCategory === cat.id
-                  ? 'bg-[#587B6C] text-white shadow-sm'
-                  : 'text-[#64786E] hover:text-[#2C4A3E] hover:bg-[#F5F2EB]'
+                  ? 'bg-[#7C9D8E] text-white shadow-sm scale-105'
+                  : 'text-[#A8C4B8] hover:text-white hover:bg-[#7C9D8E]/20'
               }`}
             >
               {cat.label}
@@ -70,150 +105,150 @@ export default function MapPage({ onOpenUploadModal }) {
           ))}
         </div>
 
-        {/* Add Spot Button */}
-        <button
-          onClick={onOpenUploadModal}
-          className="pointer-events-auto flex items-center gap-2 px-4 py-2.5 rounded-2xl bg-[#587B6C] hover:bg-[#48685A] text-white font-bold text-xs uppercase tracking-wider shadow-sage active:scale-95 transition-all"
-        >
-          <Plus className="w-4 h-4 stroke-[3]" />
-          <span>Add Spot</span>
-        </button>
-
-      </div>
-
-      {/* Community Map Interactive Canvas with Earthy Tones */}
-      <div className="relative w-full h-full flex items-center justify-center overflow-hidden">
-        
-        {/* Earthy Map Grid Pattern */}
-        <div className="absolute inset-0 bg-[radial-gradient(#D6CEC2_1px,transparent_1px)] [background-size:26px_26px] opacity-75" />
-
-        {/* Concentric rings in soft sage green */}
-        <div className="absolute w-[560px] h-[560px] rounded-full border border-[#7C9D8E]/20 animate-ping" style={{ animationDuration: '9s' }} />
-        <div className="absolute w-[380px] h-[380px] rounded-full border border-[#7C9D8E]/30" />
-        <div className="absolute w-[200px] h-[200px] rounded-full border border-[#7C9D8E]/35" />
-
-        {/* Interactive Map Stage */}
-        <div className="relative z-10 w-full max-w-5xl h-[500px] mx-auto p-4 flex flex-col justify-between">
-          
-          {/* Header Tag */}
-          <div className="flex items-center justify-between p-3.5 rounded-2xl bg-white/95 border border-[#E2DDD1] text-xs shadow-sm">
-            <div className="flex items-center gap-2 text-[#2C4A3E] font-bold">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#587B6C] animate-pulse" />
-              <span>PUNE COMMUNITY GREEN MAP</span>
-            </div>
-            <span className="text-[#8C857B] font-medium">
-              {points.length} Active Verified Action Spots
-            </span>
-          </div>
-
-          {/* Interactive Spot Pins */}
-          <div className="relative w-full h-[400px]">
-            {points.map((pt, idx) => {
-              const leftOffsets = ['22%', '45%', '68%', '80%', '34%', '58%'];
-              const topOffsets = ['26%', '52%', '32%', '64%', '74%', '40%'];
-              const leftPercent = leftOffsets[idx % leftOffsets.length];
-              const topPercent = topOffsets[idx % topOffsets.length];
-              const isSelected = activePoint?.id === pt.id;
-
-              return (
-                <div
-                  key={pt.id}
-                  style={{ left: leftPercent, top: topPercent }}
-                  onClick={() => setActivePoint(pt)}
-                  className="absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer group z-20"
-                >
-                  <div className="relative flex items-center justify-center">
-                    
-                    {/* Soft sage ping ripple */}
-                    <div className={`absolute w-10 h-10 rounded-full transition-all ${
-                      isSelected ? 'bg-[#7C9D8E]/40 animate-ping' : 'bg-[#7C9D8E]/20 group-hover:bg-[#7C9D8E]/35'
-                    }`} style={{ animationDuration: '3.5s' }} />
-
-                    {/* Sage Green Pin */}
-                    <div className={`w-10 h-10 rounded-2xl bg-white border-2 flex items-center justify-center transition-all shadow-md ${
-                      isSelected 
-                        ? 'border-[#587B6C] shadow-sage scale-125' 
-                        : 'border-[#7C9D8E] hover:scale-110'
-                    }`}>
-                      <span className="text-base">🌱</span>
-                    </div>
-
-                    {/* Floating Spot Label */}
-                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-30 pointer-events-none">
-                      <div className="px-3 py-1 rounded-xl bg-white border border-[#7C9D8E] text-xs font-semibold text-[#2C4A3E] whitespace-nowrap shadow-md">
-                        {pt.location_name.split(',')[0]} • +{pt.co2_saved_kg}kg
-                      </div>
-                    </div>
-
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-        </div>
-
-      </div>
-
-      {/* Selected Action Detail Card (Floating Cream Inspector) */}
-      {activePoint && (
-        <div className="absolute bottom-6 right-6 z-30 w-80 sm:w-96 rounded-3xl bg-white border border-[#E2DDD1] p-5 shadow-xl animate-in fade-in slide-in-from-bottom-3">
-          
-          <div className="flex items-center justify-between pb-2 mb-3 border-b border-[#E2DDD1]">
-            <span className="text-xs font-bold text-[#2C4A3E] flex items-center gap-1.5">
-              <CheckCircle2 className="w-4 h-4 text-[#587B6C]" />
-              <span>PHOTO CHECK PASSED</span>
-            </span>
-            <button
-              onClick={() => setActivePoint(null)}
-              className="text-[#8C857B] hover:text-[#2C4A3E] text-xs font-semibold"
-            >
-              ✕ Close
+        <div className="flex items-center gap-2 pointer-events-auto">
+          {/* Zoom controls */}
+          <div className="flex flex-col gap-1 glass-dark rounded-xl p-1 border border-[#7C9D8E]/20">
+            <button onClick={() => setZoom(z => Math.min(z + 0.2, 2))}
+              className="w-8 h-8 flex items-center justify-center text-[#A8C4B8] hover:text-white hover:bg-[#7C9D8E]/20 rounded-lg transition-all">
+              <ZoomIn className="w-4 h-4" />
+            </button>
+            <button onClick={() => setZoom(z => Math.max(z - 0.2, 0.6))}
+              className="w-8 h-8 flex items-center justify-center text-[#A8C4B8] hover:text-white hover:bg-[#7C9D8E]/20 rounded-lg transition-all">
+              <ZoomOut className="w-4 h-4" />
             </button>
           </div>
 
-          {/* Action Photo */}
-          <div className="h-36 rounded-2xl overflow-hidden mb-3 border border-[#E2DDD1] relative bg-[#EFECE4]">
-            <img 
-              src={activePoint.photo_url} 
-              alt={activePoint.title}
-              className="w-full h-full object-cover" 
+          {/* Add Spot */}
+          <button
+            onClick={onOpenUploadModal}
+            className="flex items-center gap-2 px-4 py-2.5 rounded-2xl font-bold text-xs uppercase tracking-wider bg-[#7C9D8E] hover:bg-[#8DAE9F] text-white shadow-[0_4px_16px_rgba(124,157,142,0.4)] active:scale-95 transition-all"
+          >
+            <Plus className="w-4 h-4 stroke-[2.5]" />
+            <span>Add Spot</span>
+          </button>
+        </div>
+      </div>
+
+      {/* ── Eco-Action Pins ── */}
+      <div
+        className="absolute inset-0 transition-transform duration-500"
+        style={{ transform: `scale(${zoom})`, transformOrigin: 'center center' }}
+      >
+        {!isLoading && points.map((pt, idx) => {
+          const pos = PIN_POSITIONS[idx % PIN_POSITIONS.length];
+          const isSelected = activePoint?.id === pt.id;
+          const emoji = CATEGORY_EMOJIS[pt.category] || '🌿';
+
+          return (
+            <div
+              key={pt.id}
+              style={{ left: pos.left, top: pos.top }}
+              onClick={() => setActivePoint(pt)}
+              className="absolute -translate-x-1/2 -translate-y-1/2 cursor-pointer group z-20 map-pin"
+            >
+              {/* Ripple rings */}
+              {isSelected && (
+                <>
+                  <div className="absolute inset-0 w-14 h-14 -translate-x-1 -translate-y-1 rounded-full bg-[#7C9D8E]/20"
+                    style={{ animation: 'map-ripple 2s ease-out infinite' }} />
+                  <div className="absolute inset-0 w-14 h-14 -translate-x-1 -translate-y-1 rounded-full bg-[#7C9D8E]/15"
+                    style={{ animation: 'map-ripple 2s ease-out infinite 1s' }} />
+                </>
+              )}
+
+              {/* Pin body */}
+              <div className={`relative w-12 h-12 rounded-2xl flex items-center justify-center transition-all duration-300 ${
+                isSelected
+                  ? 'bg-[#7C9D8E] shadow-[0_0_24px_rgba(124,157,142,0.7)] scale-125'
+                  : 'bg-[#162D2D]/90 border border-[#7C9D8E]/40 shadow-[0_4px_16px_rgba(0,0,0,0.5)] hover:bg-[#7C9D8E]/30 hover:scale-110 hover:border-[#7C9D8E]/70'
+              }`}>
+                <span className="text-lg leading-none">{emoji}</span>
+              </div>
+
+              {/* Hover tooltip */}
+              <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-30">
+                <div className="px-3 py-1.5 rounded-xl glass-dark border border-[#7C9D8E]/30 text-xs font-semibold text-[#E8EFEA] whitespace-nowrap shadow-xl">
+                  {pt.location_name?.split(',')[0]} · +{pt.co2_saved_kg}kg CO₂
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-[#162D2D]" />
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* ── Bottom Stats Bar ── */}
+      <div className="absolute bottom-4 left-4 z-20">
+        <div className="flex items-center gap-3 px-4 py-2.5 rounded-2xl glass-dark border border-[#7C9D8E]/20 shadow-xl">
+          <div className="flex items-center gap-2">
+            <span className="relative flex h-2.5 w-2.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#7C9D8E] opacity-75" />
+              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-[#7C9D8E]" />
+            </span>
+            <span className="text-[#A8C4B8] text-xs font-bold uppercase tracking-wide">PUNE COMMUNITY MAP</span>
+          </div>
+          <div className="w-px h-4 bg-[#7C9D8E]/30" />
+          <span className="text-[#7C9D8E] text-xs font-semibold">{points.length} Active Spots</span>
+        </div>
+      </div>
+
+      {/* ── Selected Spot Inspector Card ── */}
+      {activePoint && (
+        <div className="absolute bottom-4 right-4 z-30 w-80 sm:w-96 rounded-3xl glass-dark border border-[#7C9D8E]/25 shadow-2xl overflow-hidden animate-slide-up">
+
+          {/* Card header */}
+          <div className="flex items-center justify-between px-5 pt-4 pb-3 border-b border-[#7C9D8E]/20">
+            <span className="text-xs font-bold text-[#A8C4B8] flex items-center gap-1.5 uppercase tracking-wide">
+              <CheckCircle2 className="w-3.5 h-3.5 text-[#7C9D8E]" />
+              Photo Check Passed
+            </span>
+            <button
+              onClick={() => setActivePoint(null)}
+              className="text-[#7C9D8E] hover:text-white p-1 rounded-lg hover:bg-[#7C9D8E]/20 transition-all"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+
+          {/* Photo */}
+          <div className="relative h-40 overflow-hidden">
+            <img
+              src={activePoint.photo_url}
+              alt={activePoint.location_name}
+              className="w-full h-full object-cover"
             />
-            <div className="absolute bottom-2 left-2 px-2.5 py-0.5 rounded-lg bg-white/90 backdrop-blur-md text-[10px] text-[#2C4A3E] font-medium shadow-sm">
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0F2020]/60 via-transparent to-transparent" />
+            <div className="absolute bottom-2 left-3 px-2.5 py-0.5 rounded-lg bg-[#162D2D]/80 backdrop-blur-md border border-[#7C9D8E]/30 text-[10px] font-semibold text-[#A8C4B8]">
               {activePoint.category}
             </div>
           </div>
 
-          <h3 className="font-display font-bold text-[#2C4A3E] text-base mb-1 line-clamp-1">
-            {activePoint.location_name}
-          </h3>
-          <p className="text-xs text-[#64786E] mb-3 line-clamp-2 leading-relaxed">
-            {activePoint.description}
-          </p>
+          {/* Body */}
+          <div className="px-5 py-4">
+            <h3 className="font-display font-bold text-white text-base mb-0.5 line-clamp-1">{activePoint.location_name}</h3>
+            <p className="text-xs text-[#7C9D8E] mb-3 line-clamp-2 leading-relaxed">{activePoint.description}</p>
 
-          <div className="grid grid-cols-2 gap-2 text-center p-2.5 rounded-2xl bg-[#FAF8F5] border border-[#EAE5D9] mb-3">
-            <div>
-              <span className="text-[10px] text-[#8C857B] block uppercase font-medium">CO₂ Saved</span>
-              <span className="text-[#2C4A3E] font-bold text-sm">
-                +{activePoint.co2_saved_kg} kg CO₂
-              </span>
+            {/* Stats row */}
+            <div className="grid grid-cols-2 gap-2 p-3 rounded-2xl bg-[#0F2020]/50 border border-[#7C9D8E]/15 mb-3">
+              <div className="text-center">
+                <span className="text-[10px] text-[#7C9D8E] uppercase block font-medium mb-0.5">CO₂ Saved</span>
+                <span className="text-white font-bold text-sm">+{activePoint.co2_saved_kg} kg</span>
+              </div>
+              <div className="text-center border-l border-[#7C9D8E]/20">
+                <span className="text-[10px] text-[#7C9D8E] uppercase block font-medium mb-0.5">Points</span>
+                <span className="text-[#A8C4B8] font-bold text-sm">+{activePoint.points_awarded} 🌱</span>
+              </div>
             </div>
-            <div>
-              <span className="text-[10px] text-[#8C857B] block uppercase font-medium">Points Awarded</span>
-              <span className="text-[#587B6C] font-bold text-sm">
-                +{activePoint.points_awarded} 🌱 Points
+
+            <div className="flex items-center justify-between text-xs text-[#7C9D8E] pt-2 border-t border-[#7C9D8E]/15">
+              <span className="flex items-center gap-1">
+                <Users className="w-3 h-3" /> {activePoint.user_name}
               </span>
+              <span className="font-semibold text-[#A8C4B8]">{activePoint.group_name}</span>
             </div>
           </div>
-
-          <div className="flex items-center justify-between text-xs text-[#8C857B] pt-2 border-t border-[#E2DDD1]">
-            <span>By {activePoint.user_name}</span>
-            <span className="text-[#2C4A3E] font-semibold">{activePoint.group_name}</span>
-          </div>
-
         </div>
       )}
-
     </div>
   );
 }

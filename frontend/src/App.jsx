@@ -25,9 +25,7 @@ export default function App() {
 
   const showToast = ({ type = 'success', title, message }) => {
     setToast({ type, title, message });
-    setTimeout(() => {
-      setToast(null);
-    }, 4500);
+    setTimeout(() => setToast(null), 4500);
   };
 
   const handlePointsUpdate = (newPoints) => {
@@ -35,64 +33,78 @@ export default function App() {
   };
 
   const handlePostCreated = (newPost) => {
-    // Add awarded points to current user state
     setUser(prev => prev ? {
       ...prev,
       green_points: prev.green_points + (newPost.points_awarded || 50)
     } : prev);
-
-    // Switch to Home Feed to view the newly posted action
     setActiveTab('feed');
   };
 
   return (
-    <div className="min-h-screen bg-[#F5F2EB] text-[#2C4A3E] flex flex-col font-sans selection:bg-[#7C9D8E] selection:text-white">
-      
-      {/* PrithviNet Navigation Header */}
-      <Header
-        user={user}
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        onOpenUploadModal={() => setIsUploadModalOpen(true)}
-      />
+    <div className="min-h-screen bg-[#F5F2EB] text-[#2C4A3E] flex flex-col font-sans selection:bg-[#7C9D8E] selection:text-white relative overflow-x-hidden">
 
-      {/* Community Stats Bar */}
-      <CommunityStatsBar />
+      {/* ── Global Ambient Background Blobs ── */}
+      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
+        {/* Top-right warm blob */}
+        <div className="absolute -top-32 -right-32 w-[500px] h-[500px] rounded-full bg-gradient-to-bl from-[#E8EFEA]/50 via-[#D4E5DC]/30 to-transparent blur-3xl" />
+        {/* Bottom-left sage blob */}
+        <div className="absolute -bottom-24 -left-24 w-96 h-96 rounded-full bg-gradient-to-tr from-[#7C9D8E]/10 to-transparent blur-3xl" />
+        {/* Center subtle warmth */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[400px] rounded-full bg-gradient-to-r from-[#FAF8F5]/40 to-[#EFECE4]/40 blur-3xl" />
+      </div>
 
-      {/* Main View Area */}
-      <main className="flex-1 w-full relative">
+      {/* ── Navigation Header ── */}
+      <div className="relative z-10">
+        <Header
+          user={user}
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          onOpenUploadModal={() => setIsUploadModalOpen(true)}
+        />
+        <CommunityStatsBar />
+      </div>
+
+      {/* ── Main Content ── */}
+      <main className="flex-1 w-full relative z-10">
+
         {activeTab === 'feed' && (
-          <Feed
-            user={user}
-            onOpenUploadModal={() => setIsUploadModalOpen(true)}
-            onToast={showToast}
-          />
+          <div className="page-enter">
+            <Feed
+              user={user}
+              onOpenUploadModal={() => setIsUploadModalOpen(true)}
+              onToast={showToast}
+            />
+          </div>
         )}
 
         {activeTab === 'map' && (
-          <MapPage
-            onOpenUploadModal={() => setIsUploadModalOpen(true)}
-          />
+          <div className="page-enter">
+            <MapPage onOpenUploadModal={() => setIsUploadModalOpen(true)} />
+          </div>
         )}
 
         {activeTab === 'groups' && (
-          <GroupsPage
-            user={user}
-            onUserUpdated={setUser}
-            onToast={showToast}
-          />
+          <div className="page-enter">
+            <GroupsPage
+              user={user}
+              onUserUpdated={setUser}
+              onToast={showToast}
+            />
+          </div>
         )}
 
         {activeTab === 'rewards' && (
-          <RewardsPage
-            user={user}
-            onPointsUpdate={handlePointsUpdate}
-            onToast={showToast}
-          />
+          <div className="page-enter">
+            <RewardsPage
+              user={user}
+              onPointsUpdate={handlePointsUpdate}
+              onToast={showToast}
+            />
+          </div>
         )}
       </main>
 
-      {/* 2-Step Action Poster Wizard Modal */}
+      {/* ── Upload Modal ── */}
       <UploadModal
         isOpen={isUploadModalOpen}
         onClose={() => setIsUploadModalOpen(false)}
@@ -101,9 +113,8 @@ export default function App() {
         onToast={showToast}
       />
 
-      {/* Toast Notifications */}
+      {/* ── Toast Notifications ── */}
       <Toast toast={toast} onClose={() => setToast(null)} />
-
     </div>
   );
 }
