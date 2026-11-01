@@ -29,6 +29,10 @@ class User(Base):
     community_group_id = Column(Integer, ForeignKey("community_groups.id"), nullable=True)
     green_points = Column(Integer, default=120, nullable=False)
     avatar_url = Column(String(500), nullable=True)
+    bio = Column(Text, nullable=True, default="Pune eco-warrior making everyday sustainable choices.")
+    neighborhood = Column(String(100), nullable=True, default="Alandi, Pune")
+    phone = Column(String(30), nullable=True, default="")
+    eco_interests = Column(String(200), nullable=True, default="Tree Planting, Clean-up Drive, Solar Energy")
     created_at = Column(DateTime, default=datetime.utcnow)
 
     # Relationships

@@ -264,7 +264,7 @@ export default function MapPage({ onOpenUploadModal }) {
   ];
 
   return (
-    <div className="relative w-full h-[calc(100vh-125px)] md:h-[calc(100vh-70px)] overflow-hidden map-canvas font-sans select-none">
+    <div className="relative w-full h-[calc(100dvh-64px)] overflow-hidden map-canvas font-sans select-none">
 
       {/* ── Map Grid Overlay ── */}
       <div className="absolute inset-0 map-grid opacity-100 pointer-events-none" />
@@ -401,10 +401,10 @@ export default function MapPage({ onOpenUploadModal }) {
         </div>
       </div>
 
-      {/* ── PHOTO CHECK PASS INSPECTOR: RESPONSIVE WARM BEIGE CARD (FLOATING ON MOBILE & DESKTOP) ── */}
+      {/* ── PHOTO CHECK PASS INSPECTOR: ELEVATED UPWARDS ON DESKTOP & DOCKED ABOVE NAV ON MOBILE ── */}
       {activePoint && (
         <div
-          className="absolute z-30 w-[calc(100%-1.5rem)] left-3 right-3 bottom-[68px] sm:left-auto sm:right-6 sm:w-96 sm:bottom-[64px] max-h-[70vh] sm:max-h-[80vh] overflow-y-auto rounded-2xl sm:rounded-3xl border border-[#DFD3C3] shadow-[0_16px_40px_rgba(40,30,20,0.25)] animate-slide-up"
+          className="absolute z-30 w-[calc(100%-1.5rem)] left-3 right-3 sm:left-auto sm:right-6 lg:right-8 bottom-[80px] sm:bottom-auto sm:top-16 sm:w-[380px] max-h-[65dvh] sm:max-h-[calc(100dvh-95px)] overflow-y-auto rounded-2xl sm:rounded-3xl border border-[#DFD3C3] shadow-[0_24px_50px_rgba(15,32,32,0.45)] animate-slide-up"
           style={{
             background: 'linear-gradient(145deg, #FAF4EC 0%, #F5ECE0 55%, #EFE3D3 100%)',
             backdropFilter: 'blur(20px)',

@@ -13,6 +13,10 @@ export const DEFAULT_USER = {
   community_group_name: "MITAOE Green Warriors",
   green_points: 240,
   avatar_url: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop",
+  bio: "Passionate environmental volunteer & urban planter dedicated to a greener, cleaner Pune.",
+  neighborhood: "Alandi, Pune",
+  phone: "+91 98230 45678",
+  eco_interests: "Tree Planting, Clean-up Drive, Solar Energy, Composting",
   created_at: new Date().toISOString()
 };
 
@@ -234,19 +238,56 @@ export async function createEcoPost(formData) {
     const category = formData.get('category') || 'Clean-up Drive';
     const location = formData.get('location_name') || 'Pune Community';
     const description = formData.get('description') || 'Eco action proof verified.';
+    const photoUrl = formData.get('photo_url') || 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=800&auto=format&fit=crop';
     return {
       id: Date.now(),
       user_id: 1,
       group_id: 1,
       user_name: DEFAULT_USER.name,
+      user_avatar: DEFAULT_USER.avatar_url,
+      group_name: DEFAULT_USER.community_group_name,
       description,
       location_name: location,
       category,
+      photo_url: photoUrl,
       co2_saved_kg: 18.5,
       points_awarded: 60,
       status: 'Verified',
       timestamp: new Date().toISOString()
     };
+  }
+}
+
+export async function updateUserProfile(profileData, userId = 1) {
+  try {
+    const res = await fetch(`${API_BASE}/api/users/me?user_id=${userId}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(profileData),
+    });
+    if (!res.ok) {
+      const errorData = await res.json().catch(() => ({}));
+      throw new Error(errorData.detail || 'Could not update profile.');
+    }
+    return await res.json();
+  } catch (err) {
+    // Local fallback update
+    return {
+      ...DEFAULT_USER,
+      ...profileData,
+    };
+  }
+}
+
+export async function fetchUserPosts(userId = 1) {
+  try {
+    const res = await fetch(`${API_BASE}/api/users/me/posts?user_id=${userId}`);
+    if (!res.ok) throw new Error('Failed to fetch user posts');
+    return await res.json();
+  } catch (err) {
+    return [];
   }
 }
 

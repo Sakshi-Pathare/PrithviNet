@@ -1,16 +1,49 @@
 import React, { useState, useEffect } from 'react';
 import { 
   CheckCircle2, MapPin, Sparkles, Clock, Heart, 
-  Share2, Users, TrendingUp, Leaf, Plus, Filter
+  Share2, Users, TrendingUp, Leaf, Plus, MessageSquare, Send
 } from 'lucide-react';
 import { fetchFeed } from '../api';
+import ShareModal from './ShareModal';
 
-export default function Feed({ user, onOpenUploadModal, onToast }) {
+const INITIAL_COMMENTS = {
+  1: [
+    {
+      id: 'c1',
+      user_name: 'Dr. Radhika Kulkarni',
+      user_avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&auto=format&fit=crop',
+      text: 'Wonderful initiative! The Indrayani riverbank truly needs native canopy shade.',
+      timestamp: '2h ago'
+    },
+    {
+      id: 'c2',
+      user_name: 'Amit Joshi',
+      user_avatar: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200&auto=format&fit=crop',
+      text: 'Joined this drive with the team. Count me in for the next watering schedule!',
+      timestamp: '1h ago'
+    }
+  ],
+  2: [
+    {
+      id: 'c3',
+      user_name: 'Pooja Nair',
+      user_avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=200&auto=format&fit=crop',
+      text: 'Thank you for cleaning the trail! Joggers will appreciate this so much.',
+      timestamp: '4h ago'
+    }
+  ]
+};
+
+export default function Feed({ user, onOpenUploadModal, onToast, setActiveTab, newlyCreatedPost }) {
   const [posts, setPosts] = useState([]);
   const [sortBy, setSortBy] = useState('recent');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [isLoading, setIsLoading] = useState(true);
   const [cheeredPosts, setCheeredPosts] = useState({});
+  const [comments, setComments] = useState(INITIAL_COMMENTS);
+  const [expandedComments, setExpandedComments] = useState({});
+  const [newCommentInputs, setNewCommentInputs] = useState({});
+  const [shareModalPost, setShareModalPost] = useState(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -18,7 +51,14 @@ export default function Feed({ user, onOpenUploadModal, onToast }) {
       setIsLoading(true);
       try {
         const data = await fetchFeed({ sortBy, category: selectedCategory });
-        if (isMounted) setPosts(data);
+        if (isMounted) {
+          // If we have a newly created post, ensure it remains at the top
+          if (newlyCreatedPost) {
+            setPosts([newlyCreatedPost, ...data.filter(p => p.id !== newlyCreatedPost.id)]);
+          } else {
+            setPosts(data);
+          }
+        }
       } catch (err) {
         console.error('Error fetching feed:', err);
       } finally {
@@ -29,9 +69,50 @@ export default function Feed({ user, onOpenUploadModal, onToast }) {
     return () => { isMounted = false; };
   }, [sortBy, selectedCategory]);
 
+  // Prepend newly created post immediately and smoothly scroll up
+  useEffect(() => {
+    if (newlyCreatedPost) {
+      setPosts(prev => {
+        const exists = prev.some(p => p.id === newlyCreatedPost.id);
+        if (exists) return prev;
+        return [newlyCreatedPost, ...prev];
+      });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [newlyCreatedPost]);
+
   const handleCheer = (postId) => {
     setCheeredPosts(prev => ({ ...prev, [postId]: (prev[postId] || 0) + 1 }));
     onToast?.({ type: 'success', title: 'Action Cheered! 💚', message: 'You cheered on a neighbour\'s green effort!' });
+  };
+
+  const toggleComments = (postId) => {
+    setExpandedComments(prev => ({ ...prev, [postId]: !prev[postId] }));
+  };
+
+  const handleAddComment = (postId) => {
+    const text = newCommentInputs[postId]?.trim();
+    if (!text) return;
+
+    const newComment = {
+      id: `c_${Date.now()}`,
+      user_name: user?.name || 'You',
+      user_avatar: user?.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop',
+      text,
+      timestamp: 'Just now'
+    };
+
+    setComments(prev => ({
+      ...prev,
+      [postId]: [...(prev[postId] || []), newComment]
+    }));
+
+    setNewCommentInputs(prev => ({ ...prev, [postId]: '' }));
+    onToast?.({
+      type: 'success',
+      title: 'Comment Shared! 💬',
+      message: 'Your words inspire our Pune community to keep going green.'
+    });
   };
 
   const categories = [
@@ -68,7 +149,7 @@ export default function Feed({ user, onOpenUploadModal, onToast }) {
           </div>
           <button
             onClick={onOpenUploadModal}
-            className="btn-sage w-full sm:w-auto shrink-0 px-4 py-2.5 sm:px-5 sm:py-3 rounded-xl sm:rounded-2xl font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 active:scale-95 shadow-sage"
+            className="btn-sage w-full sm:w-auto shrink-0 px-4 py-2.5 sm:px-5 sm:py-3 rounded-xl sm:rounded-2xl font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 active:scale-95 shadow-sage cursor-pointer"
           >
             <Plus className="w-4 h-4 stroke-[3]" />
             <span>Share Real Proof</span>
@@ -88,7 +169,7 @@ export default function Feed({ user, onOpenUploadModal, onToast }) {
             <button
               key={id}
               onClick={() => setSortBy(id)}
-              className={`flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition-all duration-200 text-xs ${
+              className={`flex-1 sm:flex-initial flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg font-medium transition-all duration-200 text-xs cursor-pointer ${
                 sortBy === id
                   ? 'bg-white text-[#2C4A3E] font-bold shadow-xs'
                   : 'text-[#8C857B] hover:text-[#2C4A3E]'
@@ -106,7 +187,7 @@ export default function Feed({ user, onOpenUploadModal, onToast }) {
             <button
               key={cat.id}
               onClick={() => setSelectedCategory(cat.id)}
-              className={`px-3 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap transition-all duration-200 shrink-0 ${
+              className={`px-3 py-1.5 rounded-xl text-xs font-medium whitespace-nowrap transition-all duration-200 shrink-0 cursor-pointer ${
                 selectedCategory === cat.id
                   ? 'bg-[#587B6C] text-white shadow-xs font-semibold'
                   : 'text-[#8C857B] hover:text-[#2C4A3E] hover:bg-[#F5F2EB]/80 border border-transparent'
@@ -138,7 +219,7 @@ export default function Feed({ user, onOpenUploadModal, onToast }) {
           </p>
           <button
             onClick={onOpenUploadModal}
-            className="btn-sage px-5 py-2.5 rounded-xl sm:rounded-2xl font-bold text-xs uppercase tracking-wider"
+            className="btn-sage px-5 py-2.5 rounded-xl sm:rounded-2xl font-bold text-xs uppercase tracking-wider cursor-pointer"
           >
             + Post First Action
           </button>
@@ -147,10 +228,16 @@ export default function Feed({ user, onOpenUploadModal, onToast }) {
         <div className="space-y-4 sm:space-y-6">
           {posts.map((post, i) => {
             const cheers = cheeredPosts[post.id] || 0;
+            const postComments = comments[post.id] || [];
+            const isCommentsOpen = Boolean(expandedComments[post.id]);
+            const isJustAdded = newlyCreatedPost && newlyCreatedPost.id === post.id;
+
             return (
               <article
                 key={post.id}
-                className="post-card rounded-2xl sm:rounded-3xl overflow-hidden"
+                className={`post-card rounded-2xl sm:rounded-3xl overflow-hidden transition-all duration-300 ${
+                  isJustAdded ? 'ring-2 ring-[#587B6C] shadow-lg animate-in fade-in slide-in-from-top-4' : ''
+                }`}
                 style={{ animationDelay: `${i * 60}ms` }}
               >
                 <div className="p-4 sm:p-6">
@@ -172,6 +259,11 @@ export default function Feed({ user, onOpenUploadModal, onToast }) {
                             <span className="px-2 py-0.5 rounded-full bg-[#E8EFEA]/80 backdrop-blur-sm border border-[#7C9D8E]/25 text-[#2C4A3E] text-[10px] sm:text-[11px] font-medium flex items-center gap-1 truncate max-w-[150px] sm:max-w-none">
                               <Users className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-[#587B6C] shrink-0" />
                               <span className="truncate">{post.group_name}</span>
+                            </span>
+                          )}
+                          {isJustAdded && (
+                            <span className="px-2 py-0.5 rounded-full bg-emerald-100 border border-emerald-300 text-emerald-800 text-[9px] font-bold uppercase tracking-wider animate-pulse">
+                              Just Shared
                             </span>
                           )}
                         </div>
@@ -220,27 +312,117 @@ export default function Feed({ user, onOpenUploadModal, onToast }) {
                     </div>
                   </div>
 
-                  {/* Card Footer: Cheer */}
+                  {/* Card Footer: Cheer, Comment, Share */}
                   <div className="flex items-center justify-between pt-2.5 border-t border-[#E2DDD1]/50 text-xs text-[#8C857B]">
-                    <button
-                      onClick={() => handleCheer(post.id)}
-                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border transition-all duration-200 font-medium text-xs min-h-[36px] ${
-                        cheers > 0
-                          ? 'bg-red-50 border-red-200 text-red-500'
-                          : 'bg-[#F5F2EB]/80 hover:bg-[#E8EFEA] text-[#2C4A3E] border-[#E2DDD1] active:scale-95'
-                      }`}
-                    >
-                      <Heart className={`w-3.5 h-3.5 transition-all ${cheers > 0 ? 'fill-red-500 scale-110' : ''}`} />
-                      <span>Cheer {cheers > 0 ? `(${cheers})` : ''}</span>
-                    </button>
-                    <span className="text-[11px] text-[#8C857B] font-medium">Real-Action Proof ✓</span>
+                    <div className="flex items-center gap-2">
+                      {/* Cheer button */}
+                      <button
+                        onClick={() => handleCheer(post.id)}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border transition-all duration-200 font-medium text-xs min-h-[36px] cursor-pointer ${
+                          cheers > 0
+                            ? 'bg-red-50 border-red-200 text-red-500'
+                            : 'bg-[#F5F2EB]/80 hover:bg-[#E8EFEA] text-[#2C4A3E] border-[#E2DDD1] active:scale-95'
+                        }`}
+                      >
+                        <Heart className={`w-3.5 h-3.5 transition-all ${cheers > 0 ? 'fill-red-500 scale-110' : ''}`} />
+                        <span>Cheer {cheers > 0 ? `(${cheers})` : ''}</span>
+                      </button>
+
+                      {/* Comment toggle button */}
+                      <button
+                        onClick={() => toggleComments(post.id)}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl border transition-all duration-200 font-medium text-xs min-h-[36px] cursor-pointer ${
+                          isCommentsOpen
+                            ? 'bg-[#E8EFEA] border-[#7C9D8E]/40 text-[#2C4A3E]'
+                            : 'bg-[#F5F2EB]/80 hover:bg-[#E8EFEA] text-[#2C4A3E] border-[#E2DDD1] active:scale-95'
+                        }`}
+                      >
+                        <MessageSquare className="w-3.5 h-3.5 text-[#587B6C]" />
+                        <span>Comment {postComments.length > 0 ? `(${postComments.length})` : ''}</span>
+                      </button>
+
+                      {/* Share modal trigger */}
+                      <button
+                        onClick={() => setShareModalPost(post)}
+                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border bg-[#F5F2EB]/80 hover:bg-[#E8EFEA] text-[#2C4A3E] border-[#E2DDD1] active:scale-95 transition-all cursor-pointer min-h-[36px]"
+                        title="Share this action"
+                      >
+                        <Share2 className="w-3.5 h-3.5 text-[#587B6C]" />
+                        <span className="hidden sm:inline">Share</span>
+                      </button>
+                    </div>
+
+                    <span className="text-[11px] text-[#8C857B] font-medium hidden xs:inline">Real-Action Proof ✓</span>
                   </div>
+
+                  {/* Expandable Comments Drawer */}
+                  {isCommentsOpen && (
+                    <div className="mt-3.5 pt-3.5 border-t border-[#E2DDD1]/50 space-y-3 animate-in fade-in">
+                      {/* Comments List */}
+                      <div className="space-y-2.5 max-h-56 overflow-y-auto pr-1">
+                        {postComments.length === 0 ? (
+                          <p className="text-xs text-[#8C857B] italic py-1">No comments yet. Leave a cheer or word of encouragement!</p>
+                        ) : (
+                          postComments.map((c) => (
+                            <div key={c.id} className="flex items-start gap-2.5 p-2 rounded-xl bg-[#F5F2EB]/60 border border-[#E2DDD1]/50 text-xs">
+                              <img
+                                src={c.user_avatar}
+                                alt={c.user_name}
+                                className="w-6 h-6 rounded-full object-cover shrink-0 mt-0.5"
+                              />
+                              <div className="min-w-0 flex-1">
+                                <div className="flex items-center justify-between gap-1 mb-0.5">
+                                  <span className="font-bold text-[#2C4A3E] text-[11px]">{c.user_name}</span>
+                                  <span className="text-[10px] text-[#8C857B]">{c.timestamp}</span>
+                                </div>
+                                <p className="text-[#3B4D45] text-xs leading-relaxed">{c.text}</p>
+                              </div>
+                            </div>
+                          ))
+                        )}
+                      </div>
+
+                      {/* Add Comment Input Form */}
+                      <div className="flex items-center gap-2 pt-1">
+                        <input
+                          type="text"
+                          value={newCommentInputs[post.id] || ''}
+                          onChange={(e) => setNewCommentInputs(prev => ({ ...prev, [post.id]: e.target.value }))}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              handleAddComment(post.id);
+                            }
+                          }}
+                          placeholder="Write a message of support..."
+                          className="flex-1 px-3 py-2 rounded-xl bg-white border border-[#E2DDD1] text-xs text-[#2C4A3E] focus:outline-none focus:border-[#587B6C] focus:ring-1 focus:ring-[#587B6C]"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleAddComment(post.id)}
+                          className="p-2 rounded-xl bg-[#2C4A3E] hover:bg-[#587B6C] text-white transition-colors cursor-pointer shrink-0"
+                          title="Send comment"
+                        >
+                          <Send className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
                 </div>
               </article>
             );
           })}
         </div>
       )}
+
+      {/* Share Modal Dialog */}
+      <ShareModal
+        isOpen={Boolean(shareModalPost)}
+        onClose={() => setShareModalPost(null)}
+        post={shareModalPost}
+        onToast={onToast}
+      />
     </div>
   );
 }

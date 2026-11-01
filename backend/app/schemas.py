@@ -3,6 +3,15 @@ from typing import Optional, List, Dict, Any
 from pydantic import BaseModel, Field, ConfigDict
 
 # --- User Schemas ---
+class UserUpdateRequest(BaseModel):
+    name: Optional[str] = None
+    bio: Optional[str] = None
+    neighborhood: Optional[str] = None
+    phone: Optional[str] = None
+    eco_interests: Optional[str] = None
+    avatar_url: Optional[str] = None
+    community_group_id: Optional[int] = None
+
 class UserResponse(BaseModel):
     id: int
     name: str
@@ -11,6 +20,10 @@ class UserResponse(BaseModel):
     community_group_name: Optional[str] = None
     green_points: int
     avatar_url: Optional[str] = None
+    bio: Optional[str] = "Pune eco-warrior making everyday sustainable choices."
+    neighborhood: Optional[str] = "Alandi, Pune"
+    phone: Optional[str] = ""
+    eco_interests: Optional[str] = "Tree Planting, Clean-up Drive, Solar Energy"
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)

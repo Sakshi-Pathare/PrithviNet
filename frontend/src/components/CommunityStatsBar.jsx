@@ -34,8 +34,7 @@ export default function CommunityStatsBar() {
   const ticker = [...statItems, ...statItems];
 
   return (
-    <div className="w-full bg-gradient-to-r from-[#EFECE4] via-[#F0EDE5] to-[#EFECE4] border-y border-[#E2DDD1]/70 py-2 overflow-hidden relative">
-
+    <div className="w-full bg-gradient-to-r from-[#EFECE4] via-[#F0EDE5] to-[#EFECE4] border-y border-[#E2DDD1]/70 py-2 overflow-hidden relative select-none">
       {/* Fade edges */}
       <div className="absolute left-0 top-0 bottom-0 w-12 bg-gradient-to-r from-[#EFECE4] to-transparent z-10 pointer-events-none" />
       <div className="absolute right-0 top-0 bottom-0 w-12 bg-gradient-to-l from-[#EFECE4] to-transparent z-10 pointer-events-none" />

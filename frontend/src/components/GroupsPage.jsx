@@ -51,7 +51,7 @@ export default function GroupsPage({ user, onUserUpdated, onToast }) {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-3.5 sm:px-4 py-4 sm:py-8">
+    <div className="max-w-6xl mx-auto px-3.5 sm:px-6 lg:px-8 py-4 sm:py-8">
 
       {/* Banner — Glassmorphism */}
       <div className="relative p-5 sm:p-8 rounded-2xl sm:rounded-3xl overflow-hidden glass-card mb-5 sm:mb-8">
@@ -80,7 +80,7 @@ export default function GroupsPage({ user, onUserUpdated, onToast }) {
         </div>
       </div>
 
-      {/* Groups List */}
+      {/* Groups Grid */}
       {isLoading ? (
         <div className="flex flex-col items-center justify-center py-20">
           <div className="relative w-10 h-10 mb-3">
@@ -90,7 +90,7 @@ export default function GroupsPage({ user, onUserUpdated, onToast }) {
           <p className="text-[#8C857B] text-xs sm:text-sm">Loading community groups…</p>
         </div>
       ) : (
-        <div className="space-y-3.5 sm:space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-5">
           {groups.map((group, idx) => {
             const isCurrent = user?.community_group_id === group.id;
             const IconComp = GROUP_ICONS[group.icon] || Users;
@@ -99,26 +99,26 @@ export default function GroupsPage({ user, onUserUpdated, onToast }) {
             return (
               <div
                 key={group.id}
-                className={`group p-4 sm:p-6 rounded-2xl sm:rounded-3xl overflow-hidden glass-card flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3.5 sm:gap-4 transition-all duration-300 ${
-                  isCurrent ? 'ring-1 ring-[#587B6C]/40 border-[#7C9D8E]/40' : ''
+                className={`group p-4 sm:p-5 rounded-2xl sm:rounded-3xl overflow-hidden glass-card flex flex-col justify-between gap-3.5 transition-all duration-300 ${
+                  isCurrent ? 'ring-2 ring-[#587B6C]/40 border-[#7C9D8E]/50 shadow-md bg-white/95' : 'border-[#E2DDD1]/80 hover:border-[#7C9D8E]/40 hover:bg-white/90'
                 }`}
                 style={{ animationDelay: `${idx * 70}ms` }}
               >
-                {/* Rank + Icon + Info */}
-                <div className="flex items-start gap-3 sm:gap-4 min-w-0">
+                {/* Top: Rank + Icon + Info */}
+                <div className="flex items-start gap-3 sm:gap-3.5 min-w-0">
                   {/* Rank badge */}
                   <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-br ${rankGrad} flex items-center justify-center font-bold text-white text-xs sm:text-sm shrink-0 shadow-xs mt-0.5`}>
                     {idx === 0 ? <Medal className="w-4 h-4" /> : `#${idx + 1}`}
                   </div>
 
                   {/* Group icon */}
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl sm:rounded-2xl bg-gradient-to-br from-[#E8EFEA] to-[#D4E5DC] border border-[#7C9D8E]/25 flex items-center justify-center text-[#587B6C] shrink-0 shadow-xs">
-                    <IconComp className="w-5 h-5 sm:w-6 sm:h-6" />
+                  <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl sm:rounded-2xl bg-gradient-to-br from-[#E8EFEA] to-[#D4E5DC] border border-[#7C9D8E]/25 flex items-center justify-center text-[#587B6C] shrink-0 shadow-xs">
+                    <IconComp className="w-5 h-5 sm:w-5 sm:h-5" />
                   </div>
 
-                  <div className="min-w-0">
+                  <div className="min-w-0 flex-1">
                     <div className="flex items-center gap-1.5 flex-wrap">
-                      <h3 className="font-display font-bold text-[#2C4A3E] text-sm sm:text-lg truncate">{group.group_name}</h3>
+                      <h3 className="font-display font-bold text-[#2C4A3E] text-sm sm:text-base truncate">{group.group_name}</h3>
                       <span className="px-2 py-0.5 rounded-full bg-[#F5F2EB]/80 border border-[#E2DDD1] text-[9px] sm:text-[10px] text-[#64786E] font-medium">
                         {group.city_tag}
                       </span>
@@ -132,17 +132,17 @@ export default function GroupsPage({ user, onUserUpdated, onToast }) {
                   </div>
                 </div>
 
-                {/* Score + Join Action */}
-                <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-5 pt-2 sm:pt-0 border-t sm:border-t-0 border-[#E2DDD1]/50">
-                  <div className="text-left sm:text-right">
-                    <span className="text-[9px] sm:text-[10px] text-[#8C857B] uppercase block font-medium">CO₂ Saved</span>
-                    <span className="font-bold text-[#2C4A3E] text-sm sm:text-lg">{group.total_impact_score.toLocaleString()} <span className="text-xs font-normal">kg</span></span>
-                    <span className="text-[10px] sm:text-[11px] text-[#8C857B] block">{group.member_count} Members</span>
+                {/* Bottom: Score + Join Action */}
+                <div className="flex items-center justify-between pt-3 border-t border-[#E2DDD1]/60">
+                  <div>
+                    <span className="text-[9px] sm:text-[10px] text-[#8C857B] uppercase block font-medium">Total Impact</span>
+                    <span className="font-bold text-[#2C4A3E] text-sm sm:text-base">{group.total_impact_score.toLocaleString()} <span className="text-xs font-normal">kg CO₂</span></span>
+                    <span className="text-[10px] sm:text-[11px] text-[#8C857B] block">{group.member_count} active members</span>
                   </div>
 
                   <div>
                     {isCurrent ? (
-                      <div className="px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl sm:rounded-2xl bg-gradient-to-br from-[#E8EFEA] to-[#D4E5DC] border border-[#587B6C]/30 text-[#2C4A3E] text-xs font-bold flex items-center gap-1.5 shadow-xs">
+                      <div className="px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-xl sm:rounded-2xl bg-gradient-to-br from-[#E8EFEA] to-[#D4E5DC] border border-[#587B6C]/30 text-[#2C4A3E] text-xs font-bold flex items-center gap-1.5 shadow-xs">
                         <Check className="w-3.5 h-3.5 text-[#587B6C] stroke-[3]" />
                         <span>Joined</span>
                       </div>
@@ -150,12 +150,12 @@ export default function GroupsPage({ user, onUserUpdated, onToast }) {
                       <button
                         onClick={() => handleJoin(group)}
                         disabled={joiningId === group.id}
-                        className="btn-sage px-3.5 py-2 sm:px-4 sm:py-2.5 rounded-xl sm:rounded-2xl text-xs font-bold flex items-center gap-1.5 active:scale-95 shadow-sage"
+                        className="btn-sage px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-xl sm:rounded-2xl text-xs font-bold flex items-center gap-1.5 active:scale-95 shadow-sage cursor-pointer"
                       >
                         {joiningId === group.id ? (
                           <span className="w-3.5 h-3.5 rounded-full border-2 border-white border-t-transparent animate-spin" />
                         ) : (
-                          <><span>Join</span> <ArrowRight className="w-3.5 h-3.5" /></>
+                          <><span>Join Group</span> <ArrowRight className="w-3.5 h-3.5" /></>
                         )}
                       </button>
                     )}

@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import Header from './components/Header';
+import MobileNav from './components/MobileNav';
 import CommunityStatsBar from './components/CommunityStatsBar';
 import Feed from './components/Feed';
 import MapPage from './components/MapPage';
 import GroupsPage from './components/GroupsPage';
 import RewardsPage from './components/RewardsPage';
+import ProfilePage from './components/ProfilePage';
 import UploadModal from './components/UploadModal';
 import Toast from './components/Toast';
 import { fetchUserMe } from './api';
@@ -14,6 +16,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState('feed');
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [toast, setToast] = useState(null);
+  const [newlyCreatedPost, setNewlyCreatedPost] = useState(null);
 
   useEffect(() => {
     async function loadUser() {
@@ -32,12 +35,23 @@ export default function App() {
     setUser(prev => prev ? { ...prev, green_points: newPoints } : prev);
   };
 
+  const handleTabChange = (newTab) => {
+    if (typeof document !== 'undefined' && 'startViewTransition' in document) {
+      document.startViewTransition(() => {
+        setActiveTab(newTab);
+      });
+    } else {
+      setActiveTab(newTab);
+    }
+  };
+
   const handlePostCreated = (newPost) => {
     setUser(prev => prev ? {
       ...prev,
       green_points: prev.green_points + (newPost.points_awarded || 50)
     } : prev);
-    setActiveTab('feed');
+    setNewlyCreatedPost(newPost);
+    handleTabChange('feed');
   };
 
   return (
@@ -54,18 +68,18 @@ export default function App() {
       </div>
 
       {/* ── Navigation Header ── */}
-      <div className="relative z-10">
+      <div className="relative z-20">
         <Header
           user={user}
           activeTab={activeTab}
-          setActiveTab={setActiveTab}
+          setActiveTab={handleTabChange}
           onOpenUploadModal={() => setIsUploadModalOpen(true)}
         />
-        <CommunityStatsBar />
+        {activeTab !== 'map' && <CommunityStatsBar />}
       </div>
 
       {/* ── Main Content Area (with bottom padding for mobile navigation) ── */}
-      <main className="flex-1 w-full relative z-10 pb-20 md:pb-8">
+      <main className="flex-1 w-full relative z-10 pb-24 md:pb-8">
 
         {activeTab === 'feed' && (
           <div className="page-enter">
@@ -73,6 +87,8 @@ export default function App() {
               user={user}
               onOpenUploadModal={() => setIsUploadModalOpen(true)}
               onToast={showToast}
+              setActiveTab={handleTabChange}
+              newlyCreatedPost={newlyCreatedPost}
             />
           </div>
         )}
@@ -102,7 +118,27 @@ export default function App() {
             />
           </div>
         )}
+
+        {activeTab === 'profile' && (
+          <div className="page-enter">
+            <ProfilePage
+              user={user}
+              onUserUpdated={setUser}
+              onToast={showToast}
+              setActiveTab={handleTabChange}
+              onOpenUploadModal={() => setIsUploadModalOpen(true)}
+              newlyCreatedPost={newlyCreatedPost}
+            />
+          </div>
+        )}
       </main>
+
+      {/* ── Fixed Mobile Bottom Navigation Bar ── */}
+      <MobileNav
+        activeTab={activeTab}
+        setActiveTab={handleTabChange}
+        onOpenUploadModal={() => setIsUploadModalOpen(true)}
+      />
 
       {/* ── Upload Modal ── */}
       <UploadModal
