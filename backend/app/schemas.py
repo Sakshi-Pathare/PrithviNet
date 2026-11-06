@@ -66,6 +66,30 @@ class EcoActionPostCreate(BaseModel):
     category: Optional[str] = "Clean-up Drive"
     user_id: int = 1
 
+# --- Social Interaction Schemas ---
+class CommentCreateRequest(BaseModel):
+    text: str
+
+class CommentResponse(BaseModel):
+    id: int
+    post_id: int
+    user_id: int
+    user_name: str
+    user_avatar: Optional[str] = None
+    text: str
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+class LikeToggleResponse(BaseModel):
+    post_id: int
+    liked: bool
+    likes_count: int
+
+class BookmarkToggleResponse(BaseModel):
+    post_id: int
+    bookmarked: bool
+
 class EcoActionPostResponse(BaseModel):
     id: int
     user_id: int
@@ -83,6 +107,11 @@ class EcoActionPostResponse(BaseModel):
     points_awarded: int
     category: str
     timestamp: datetime
+    likes_count: int = 0
+    is_liked: bool = False
+    is_bookmarked: bool = False
+    comments_count: int = 0
+    latest_comments: List[CommentResponse] = []
 
     model_config = ConfigDict(from_attributes=True)
 

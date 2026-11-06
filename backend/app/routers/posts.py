@@ -6,10 +6,13 @@ from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Q
 from sqlalchemy.orm import Session
 from app.database import get_db
 from app.config import settings
-from app.models import User, CommunityGroup, EcoActionPost
-from app.schemas import EcoActionPostResponse
+from app.models import User, CommunityGroup, EcoActionPost, PostLike, PostComment, PostBookmark
+from app.schemas import (
+    EcoActionPostResponse, CommentCreateRequest, CommentResponse, 
+    LikeToggleResponse, BookmarkToggleResponse
+)
 from app.validation import run_photo_check, detect_category
-from app.auth import get_optional_current_user
+from app.auth import get_current_user, get_optional_current_user
 
 router = APIRouter(prefix="/api", tags=["posts"])
 
@@ -116,9 +119,10 @@ def get_feed(
     sort_by: str = Query("recent", pattern="^(recent|impact)$"),
     category: Optional[str] = None,
     limit: int = Query(50, ge=1, le=100),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_optional_current_user)
 ):
-    """Returns real verified eco-action posts from local communities."""
+    """Returns real verified eco-action posts from local communities with live social metrics."""
     query = (
         db.query(EcoActionPost, User)
         .join(User, EcoActionPost.user_id == User.id)
@@ -135,9 +139,44 @@ def get_feed(
 
     records = query.limit(limit).all()
 
+    # Get set of posts liked by current user
+    user_liked_post_ids = set()
+    user_bookmarked_post_ids = set()
+    if current_user:
+        user_liked_post_ids = {
+            like.post_id for like in db.query(PostLike.post_id).filter(PostLike.user_id == current_user.id).all()
+        }
+        user_bookmarked_post_ids = {
+            bm.post_id for bm in db.query(PostBookmark.post_id).filter(PostBookmark.user_id == current_user.id).all()
+        }
+
     results = []
     for post, user in records:
         group_name = user.community_group.group_name if user.community_group else None
+        
+        # Real comments from database
+        comments_query = (
+            db.query(PostComment, User)
+            .join(User, PostComment.user_id == User.id)
+            .filter(PostComment.post_id == post.id)
+            .order_by(PostComment.created_at.asc())
+            .all()
+        )
+        comments_list = [
+            CommentResponse(
+                id=c.id,
+                post_id=c.post_id,
+                user_id=u.id,
+                user_name=u.name,
+                user_avatar=u.avatar_url,
+                text=c.text,
+                created_at=c.created_at
+            )
+            for c, u in comments_query
+        ]
+
+        likes_count = db.query(PostLike).filter(PostLike.post_id == post.id).count()
+
         results.append(
             EcoActionPostResponse(
                 id=post.id,
@@ -155,7 +194,127 @@ def get_feed(
                 co2_saved_kg=post.co2_saved_kg,
                 points_awarded=post.points_awarded,
                 category=post.category,
-                timestamp=post.timestamp
+                timestamp=post.timestamp,
+                likes_count=likes_count,
+                is_liked=(post.id in user_liked_post_ids),
+                is_bookmarked=(post.id in user_bookmarked_post_ids),
+                comments_count=len(comments_list),
+                latest_comments=comments_list[-5:] # Latest 5 comments inline
             )
         )
     return results
+
+@router.post("/posts/{post_id}/like", response_model=LikeToggleResponse)
+def toggle_like_post(
+    post_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Toggles like/cheer on a post for the authenticated user."""
+    post = db.query(EcoActionPost).filter(EcoActionPost.id == post_id).first()
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+
+    existing_like = db.query(PostLike).filter(
+        PostLike.post_id == post_id,
+        PostLike.user_id == current_user.id
+    ).first()
+
+    if existing_like:
+        db.delete(existing_like)
+        db.commit()
+        liked = False
+    else:
+        new_like = PostLike(post_id=post_id, user_id=current_user.id)
+        db.add(new_like)
+        db.commit()
+        liked = True
+
+    total_likes = db.query(PostLike).filter(PostLike.post_id == post_id).count()
+    return LikeToggleResponse(post_id=post_id, liked=liked, likes_count=total_likes)
+
+@router.post("/posts/{post_id}/bookmark", response_model=BookmarkToggleResponse)
+def toggle_bookmark_post(
+    post_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Toggles bookmark/save on a post for the authenticated user."""
+    post = db.query(EcoActionPost).filter(EcoActionPost.id == post_id).first()
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+
+    existing_bm = db.query(PostBookmark).filter(
+        PostBookmark.post_id == post_id,
+        PostBookmark.user_id == current_user.id
+    ).first()
+
+    if existing_bm:
+        db.delete(existing_bm)
+        db.commit()
+        bookmarked = False
+    else:
+        new_bm = PostBookmark(post_id=post_id, user_id=current_user.id)
+        db.add(new_bm)
+        db.commit()
+        bookmarked = True
+
+    return BookmarkToggleResponse(post_id=post_id, bookmarked=bookmarked)
+
+@router.get("/posts/{post_id}/comments", response_model=List[CommentResponse])
+def get_post_comments(post_id: int, db: Session = Depends(get_db)):
+    """Returns all real comments for a post."""
+    records = (
+        db.query(PostComment, User)
+        .join(User, PostComment.user_id == User.id)
+        .filter(PostComment.post_id == post_id)
+        .order_by(PostComment.created_at.asc())
+        .all()
+    )
+    return [
+        CommentResponse(
+            id=c.id,
+            post_id=c.post_id,
+            user_id=u.id,
+            user_name=u.name,
+            user_avatar=u.avatar_url,
+            text=c.text,
+            created_at=c.created_at
+        )
+        for c, u in records
+    ]
+
+@router.post("/posts/{post_id}/comments", response_model=CommentResponse, status_code=status.HTTP_201_CREATED)
+def add_post_comment(
+    post_id: int,
+    data: CommentCreateRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
+    """Creates a real comment stored in the database for the post."""
+    text_clean = data.text.strip()
+    if not text_clean:
+        raise HTTPException(status_code=400, detail="Comment cannot be empty")
+
+    post = db.query(EcoActionPost).filter(EcoActionPost.id == post_id).first()
+    if not post:
+        raise HTTPException(status_code=404, detail="Post not found")
+
+    comment = PostComment(
+        post_id=post_id,
+        user_id=current_user.id,
+        text=text_clean
+    )
+    db.add(comment)
+    db.commit()
+    db.refresh(comment)
+
+    return CommentResponse(
+        id=comment.id,
+        post_id=comment.post_id,
+        user_id=current_user.id,
+        user_name=current_user.name,
+        user_avatar=current_user.avatar_url,
+        text=comment.text,
+        created_at=comment.created_at
+    )

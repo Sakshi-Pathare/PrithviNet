@@ -85,3 +85,4 @@ def get_optional_current_user(
     if user_id is None:
         return None
     return db.query(User).filter(User.id == user_id).first()
+

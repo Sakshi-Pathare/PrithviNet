@@ -298,3 +298,4 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, onToast, ini
     </div>
   );
 }
+

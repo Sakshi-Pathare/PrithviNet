@@ -106,3 +106,4 @@ def login(data: UserLoginRequest, db: Session = Depends(get_db)):
 def get_me(current_user: User = Depends(get_current_user)):
     """Returns the authenticated user profile."""
     return build_user_response(current_user)
+

@@ -268,7 +268,13 @@ export async function fetchFeed({ sortBy = 'recent', category = 'all' } = {}) {
     if (sortBy) params.append('sort_by', sortBy);
     if (category && category !== 'all') params.append('category', category);
 
-    const res = await fetch(`${API_BASE}/api/feed/?${params.toString()}`);
+    const token = getStoredAuthToken();
+    const headers = {};
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const res = await fetch(`${API_BASE}/api/feed/?${params.toString()}`, { headers });
     if (!res.ok) throw new Error('Failed to fetch feed');
     const data = await res.json();
     return data && data.length > 0 ? data : DEFAULT_FEED;
@@ -278,6 +284,66 @@ export async function fetchFeed({ sortBy = 'recent', category = 'all' } = {}) {
       fallback = fallback.filter(p => p.category?.toLowerCase().includes(category.toLowerCase()));
     }
     return fallback;
+  }
+}
+
+export async function togglePostLike(postId) {
+  const token = getStoredAuthToken();
+  if (!token) throw new Error('Please sign in to like posts.');
+  const res = await fetch(`${API_BASE}/api/posts/${postId}/like`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || 'Failed to toggle like');
+  }
+  return await res.json();
+}
+
+export async function togglePostBookmark(postId) {
+  const token = getStoredAuthToken();
+  if (!token) throw new Error('Please sign in to bookmark posts.');
+  const res = await fetch(`${API_BASE}/api/posts/${postId}/bookmark`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || 'Failed to toggle bookmark');
+  }
+  return await res.json();
+}
+
+export async function addPostComment(postId, text) {
+  const token = getStoredAuthToken();
+  if (!token) throw new Error('Please sign in to comment.');
+  const res = await fetch(`${API_BASE}/api/posts/${postId}/comments`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify({ text })
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || 'Failed to add comment');
+  }
+  return await res.json();
+}
+
+export async function fetchPostComments(postId) {
+  try {
+    const res = await fetch(`${API_BASE}/api/posts/${postId}/comments`);
+    if (!res.ok) return [];
+    return await res.json();
+  } catch (e) {
+    return [];
   }
 }
 
