@@ -3,6 +3,22 @@ from typing import Optional, List, Dict, Any
 from pydantic import BaseModel, Field, ConfigDict
 
 # --- User Schemas ---
+class UserRegisterRequest(BaseModel):
+    name: str
+    email: str
+    password: str
+    neighborhood: Optional[str] = "Pune, Maharashtra"
+    community_group_id: Optional[int] = 1
+
+class UserLoginRequest(BaseModel):
+    email: str
+    password: str
+
+class TokenResponse(BaseModel):
+    access_token: str
+    token_type: str = "bearer"
+    user: "UserResponse"
+
 class UserUpdateRequest(BaseModel):
     name: Optional[str] = None
     bio: Optional[str] = None

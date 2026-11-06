@@ -1,9 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  Compass, Users, ShoppingBag, PlusCircle, Flame, User
+  Compass, Users, ShoppingBag, PlusCircle, Flame, User, LogIn, LogOut, UserPlus
 } from 'lucide-react';
 
-export default function Header({ user, activeTab, setActiveTab, onOpenUploadModal }) {
+export default function Header({ 
+  user, 
+  activeTab, 
+  setActiveTab, 
+  onOpenUploadModal, 
+  onOpenAuthModal, 
+  onLogout 
+}) {
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -17,7 +24,7 @@ export default function Header({ user, activeTab, setActiveTab, onOpenUploadModa
     { id: 'map',     label: 'Map',     fullLabel: 'Community Map', icon: Compass },
     { id: 'groups',  label: 'Groups',  fullLabel: 'My Group',      icon: Users },
     { id: 'rewards', label: 'Rewards', fullLabel: 'Rewards',       icon: ShoppingBag },
-    { id: 'profile', label: 'Profile', fullLabel: 'My Profile',    icon: User },
+    ...(user ? [{ id: 'profile', label: 'Profile', fullLabel: 'My Profile', icon: User }] : []),
   ];
 
   return (
@@ -83,47 +90,85 @@ export default function Header({ user, activeTab, setActiveTab, onOpenUploadModa
           {/* Right Controls */}
           <div className="flex items-center gap-2 sm:gap-3">
 
-            {/* Green Points Pill */}
-            <div
-              onClick={() => setActiveTab('rewards')}
-              className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3.5 py-1.5 rounded-2xl bg-white/90 border border-[#E2DDD1] hover:border-[#7C9D8E]/50 shadow-xs cursor-pointer transition-all hover:bg-white group"
-              title="Your Green Points"
-            >
-              <span className="text-sm sm:text-base group-hover:scale-110 transition-transform">🌱</span>
-              <div className="text-right flex items-baseline gap-1">
-                <span className="font-bold text-[#2C4A3E] text-xs sm:text-sm tabular-nums leading-none">
-                  {user?.green_points ?? 120}
-                </span>
-                <span className="text-[10px] text-[#8C857B] uppercase font-bold">
-                  pts
-                </span>
-              </div>
-            </div>
+            {user ? (
+              <>
+                {/* Green Points Pill */}
+                <div
+                  onClick={() => setActiveTab('rewards')}
+                  className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3.5 py-1.5 rounded-2xl bg-white/90 border border-[#E2DDD1] hover:border-[#7C9D8E]/50 shadow-xs cursor-pointer transition-all hover:bg-white group"
+                  title="Your Green Points"
+                >
+                  <span className="text-sm sm:text-base group-hover:scale-110 transition-transform">🌱</span>
+                  <div className="text-right flex items-baseline gap-1">
+                    <span className="font-bold text-[#2C4A3E] text-xs sm:text-sm tabular-nums leading-none">
+                      {user?.green_points ?? 120}
+                    </span>
+                    <span className="text-[10px] text-[#8C857B] uppercase font-bold">
+                      pts
+                    </span>
+                  </div>
+                </div>
 
-            {/* User Profile Quick Chip */}
-            <button
-              type="button"
-              onClick={() => setActiveTab('profile')}
-              className={`flex items-center gap-2 p-1 sm:px-2.5 sm:py-1 rounded-2xl border transition-all cursor-pointer ${
-                activeTab === 'profile'
-                  ? 'bg-[#E8EFEA] border-[#7C9D8E]/60 shadow-xs ring-1 ring-[#587B6C]'
-                  : 'bg-white/90 border-[#E2DDD1] hover:border-[#7C9D8E]/40 hover:bg-white shadow-xs'
-              }`}
-              title="View & Edit Profile"
-            >
-              <img
-                src={user?.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop'}
-                alt={user?.name || 'User'}
-                className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl object-cover border border-[#7C9D8E]/30"
-              />
-              <span className="font-bold text-xs text-[#2C4A3E] hidden xl:inline max-w-[90px] truncate">
-                {user?.name?.split(' ')[0] || 'Profile'}
-              </span>
-            </button>
+                {/* User Profile Quick Chip */}
+                <button
+                  type="button"
+                  onClick={() => setActiveTab('profile')}
+                  className={`flex items-center gap-2 p-1 sm:px-2.5 sm:py-1 rounded-2xl border transition-all cursor-pointer ${
+                    activeTab === 'profile'
+                      ? 'bg-[#E8EFEA] border-[#7C9D8E]/60 shadow-xs ring-1 ring-[#587B6C]'
+                      : 'bg-white/90 border-[#E2DDD1] hover:border-[#7C9D8E]/40 hover:bg-white shadow-xs'
+                  }`}
+                  title="View & Edit Profile"
+                >
+                  <img
+                    src={user?.avatar_url || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop'}
+                    alt={user?.name || 'User'}
+                    className="w-7 h-7 sm:w-8 sm:h-8 rounded-xl object-cover border border-[#7C9D8E]/30"
+                  />
+                  <span className="font-bold text-xs text-[#2C4A3E] hidden xl:inline max-w-[90px] truncate">
+                    {user?.name?.split(' ')[0] || 'Profile'}
+                  </span>
+                </button>
+
+                {/* Log Out Button */}
+                <button
+                  type="button"
+                  onClick={onLogout}
+                  className="p-2 rounded-xl text-[#8C857B] hover:text-red-600 hover:bg-red-50 border border-transparent hover:border-red-100 transition-all cursor-pointer"
+                  title="Sign out of your account"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
+              </>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  onClick={() => onOpenAuthModal?.('login')}
+                  className="px-3 sm:px-4 py-2 rounded-2xl text-xs font-bold text-[#2C4A3E] hover:bg-[#F5F2EB] border border-[#E2DDD1] transition-all cursor-pointer"
+                >
+                  Sign In
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onOpenAuthModal?.('signup')}
+                  className="hidden xs:flex px-3 sm:px-4 py-2 rounded-2xl text-xs font-bold bg-[#E8EFEA] text-[#2C4A3E] border border-[#7C9D8E]/40 hover:bg-[#d8e8dd] transition-all cursor-pointer items-center gap-1.5"
+                >
+                  <UserPlus className="w-3.5 h-3.5 text-[#587B6C]" />
+                  <span>Join Free</span>
+                </button>
+              </>
+            )}
 
             {/* Desktop Post Action Button */}
             <button
-              onClick={onOpenUploadModal}
+              onClick={() => {
+                if (!user) {
+                  onOpenAuthModal?.('login');
+                } else {
+                  onOpenUploadModal?.();
+                }
+              }}
               className="hidden md:flex btn-sage items-center gap-2 px-4 py-2 rounded-2xl font-bold text-xs uppercase tracking-wider active:scale-95 shadow-sage cursor-pointer"
             >
               <PlusCircle className="w-4 h-4 stroke-[2.5]" />

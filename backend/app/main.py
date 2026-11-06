@@ -7,7 +7,7 @@ from fastapi.staticfiles import StaticFiles
 from app.config import settings
 from app.database import engine, Base, SessionLocal
 from app.seed_data import seed_initial_data
-from app.routers import posts, map as map_router, rewards, groups, users
+from app.routers import posts, map as map_router, rewards, groups, users, auth
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -41,6 +41,7 @@ os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
 app.mount("/uploads", StaticFiles(directory=settings.UPLOAD_DIR), name="uploads")
 
 # Mount Routers
+app.include_router(auth.router)
 app.include_router(posts.router)
 app.include_router(map_router.router)
 app.include_router(rewards.router)

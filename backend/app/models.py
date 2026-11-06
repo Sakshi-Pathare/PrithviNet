@@ -26,6 +26,7 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(100), nullable=False)
     email = Column(String(120), unique=True, nullable=False, index=True)
+    hashed_password = Column(String(255), nullable=True)
     community_group_id = Column(Integer, ForeignKey("community_groups.id"), nullable=True)
     green_points = Column(Integer, default=120, nullable=False)
     avatar_url = Column(String(500), nullable=True)

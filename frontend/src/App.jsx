@@ -8,20 +8,30 @@ import GroupsPage from './components/GroupsPage';
 import RewardsPage from './components/RewardsPage';
 import ProfilePage from './components/ProfilePage';
 import UploadModal from './components/UploadModal';
+import AuthModal from './components/AuthModal';
 import Toast from './components/Toast';
-import { fetchUserMe } from './api';
+import { fetchUserMe, fetchAuthMe, clearStoredAuthToken } from './api';
 
 export default function App() {
   const [user, setUser] = useState(null);
   const [activeTab, setActiveTab] = useState('feed');
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [authModalMode, setAuthModalMode] = useState('login');
   const [toast, setToast] = useState(null);
   const [newlyCreatedPost, setNewlyCreatedPost] = useState(null);
 
   useEffect(() => {
     async function loadUser() {
-      const userData = await fetchUserMe(1);
-      setUser(userData);
+      // 1. Try restoring authenticated user from token
+      const authUser = await fetchAuthMe();
+      if (authUser) {
+        setUser(authUser);
+        return;
+      }
+      // 2. Default to active Pune community profile
+      const defaultData = await fetchUserMe(1);
+      setUser(defaultData);
     }
     loadUser();
   }, []);
@@ -29,6 +39,40 @@ export default function App() {
   const showToast = ({ type = 'success', title, message }) => {
     setToast({ type, title, message });
     setTimeout(() => setToast(null), 4500);
+  };
+
+  const handleOpenAuthModal = (mode = 'login') => {
+    setAuthModalMode(mode);
+    setIsAuthModalOpen(true);
+  };
+
+  const handleAuthSuccess = (userData) => {
+    setUser(userData);
+    setIsAuthModalOpen(false);
+  };
+
+  const handleLogout = () => {
+    clearStoredAuthToken();
+    setUser(null);
+    showToast({
+      type: 'info',
+      title: 'Signed Out',
+      message: 'You have been signed out. You can browse public actions or sign in anytime.'
+    });
+    handleTabChange('feed');
+  };
+
+  const handleOpenUploadModal = () => {
+    if (!user) {
+      showToast({
+        type: 'info',
+        title: 'Sign In Required 🌱',
+        message: 'Create a free account or sign in to verify your action and earn Green Points!'
+      });
+      handleOpenAuthModal('signup');
+    } else {
+      setIsUploadModalOpen(true);
+    }
   };
 
   const handlePointsUpdate = (newPoints) => {
@@ -73,7 +117,9 @@ export default function App() {
           user={user}
           activeTab={activeTab}
           setActiveTab={handleTabChange}
-          onOpenUploadModal={() => setIsUploadModalOpen(true)}
+          onOpenUploadModal={handleOpenUploadModal}
+          onOpenAuthModal={handleOpenAuthModal}
+          onLogout={handleLogout}
         />
         {activeTab !== 'map' && <CommunityStatsBar />}
       </div>
@@ -85,7 +131,7 @@ export default function App() {
           <div className="page-enter">
             <Feed
               user={user}
-              onOpenUploadModal={() => setIsUploadModalOpen(true)}
+              onOpenUploadModal={handleOpenUploadModal}
               onToast={showToast}
               setActiveTab={handleTabChange}
               newlyCreatedPost={newlyCreatedPost}
@@ -95,7 +141,7 @@ export default function App() {
 
         {activeTab === 'map' && (
           <div className="page-enter">
-            <MapPage onOpenUploadModal={() => setIsUploadModalOpen(true)} />
+            <MapPage onOpenUploadModal={handleOpenUploadModal} />
           </div>
         )}
 
@@ -126,7 +172,7 @@ export default function App() {
               onUserUpdated={setUser}
               onToast={showToast}
               setActiveTab={handleTabChange}
-              onOpenUploadModal={() => setIsUploadModalOpen(true)}
+              onOpenUploadModal={handleOpenUploadModal}
               newlyCreatedPost={newlyCreatedPost}
             />
           </div>
@@ -137,7 +183,7 @@ export default function App() {
       <MobileNav
         activeTab={activeTab}
         setActiveTab={handleTabChange}
-        onOpenUploadModal={() => setIsUploadModalOpen(true)}
+        onOpenUploadModal={handleOpenUploadModal}
       />
 
       {/* ── Upload Modal ── */}
@@ -147,6 +193,15 @@ export default function App() {
         onPostCreated={handlePostCreated}
         user={user}
         onToast={showToast}
+      />
+
+      {/* ── Sign In / Sign Up Auth Modal ── */}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+        onAuthSuccess={handleAuthSuccess}
+        onToast={showToast}
+        initialMode={authModalMode}
       />
 
       {/* ── Toast Notifications ── */}

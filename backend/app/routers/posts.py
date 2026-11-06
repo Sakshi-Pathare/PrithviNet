@@ -9,6 +9,7 @@ from app.config import settings
 from app.models import User, CommunityGroup, EcoActionPost
 from app.schemas import EcoActionPostResponse
 from app.validation import run_photo_check, detect_category
+from app.auth import get_optional_current_user
 
 router = APIRouter(prefix="/api", tags=["posts"])
 
@@ -22,15 +23,20 @@ async def create_eco_action_post(
     user_id: Optional[int] = Form(1),
     photo_url: Optional[str] = Form(None),
     file: Optional[UploadFile] = File(None),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(get_optional_current_user)
 ):
     """
     Upload an eco-action post with photo proof, location name, and simple description.
     Runs automated Photo Check, awards Green Points, and adds to group impact.
+    Uses authenticated user if logged in, otherwise falls back to provided user_id.
     """
-    user = db.query(User).filter(User.id == user_id).first()
+    user = current_user or db.query(User).filter(User.id == user_id).first()
     if not user:
-        raise HTTPException(status_code=404, detail="User not found")
+        # Fallback to first user in database
+        user = db.query(User).first()
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
 
     saved_photo_url = photo_url or ""
 

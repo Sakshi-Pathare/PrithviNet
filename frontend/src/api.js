@@ -20,6 +20,78 @@ export const DEFAULT_USER = {
   created_at: new Date().toISOString()
 };
 
+export function getStoredAuthToken() {
+  try {
+    return localStorage.getItem('prithvinet_token') || null;
+  } catch (e) {
+    return null;
+  }
+}
+
+export function setStoredAuthToken(token) {
+  try {
+    if (token) localStorage.setItem('prithvinet_token', token);
+    else localStorage.removeItem('prithvinet_token');
+  } catch (e) {}
+}
+
+export function clearStoredAuthToken() {
+  try {
+    localStorage.removeItem('prithvinet_token');
+  } catch (e) {}
+}
+
+export async function signupUser({ name, email, password, neighborhood, community_group_id }) {
+  const res = await fetch(`${API_BASE}/api/auth/signup`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, email, password, neighborhood, community_group_id })
+  });
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.detail || 'Signup failed.');
+  }
+  const data = await res.json();
+  if (data.access_token) {
+    setStoredAuthToken(data.access_token);
+  }
+  return data;
+}
+
+export async function loginUser({ email, password }) {
+  const res = await fetch(`${API_BASE}/api/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email, password })
+  });
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.detail || 'Invalid email or password.');
+  }
+  const data = await res.json();
+  if (data.access_token) {
+    setStoredAuthToken(data.access_token);
+  }
+  return data;
+}
+
+export async function fetchAuthMe() {
+  const token = getStoredAuthToken();
+  if (!token) return null;
+  try {
+    const res = await fetch(`${API_BASE}/api/auth/me`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!res.ok) {
+      clearStoredAuthToken();
+      return null;
+    }
+    return await res.json();
+  } catch (e) {
+    return null;
+  }
+}
+
 export const DEFAULT_FEED = [
   {
     id: 1,
@@ -224,8 +296,14 @@ export async function fetchMapPoints({ category = 'all' } = {}) {
 
 export async function createEcoPost(formData) {
   try {
+    const token = getStoredAuthToken();
+    const headers = {};
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
     const res = await fetch(`${API_BASE}/api/posts/`, {
       method: 'POST',
+      headers,
       body: formData,
     });
     if (!res.ok) {
@@ -234,6 +312,9 @@ export async function createEcoPost(formData) {
     }
     return await res.json();
   } catch (err) {
+    if (err.message && !err.message.includes('fetch')) {
+      throw err;
+    }
     // If backend is offline, return simulated approved post so user experience is smooth
     const category = formData.get('category') || 'Clean-up Drive';
     const location = formData.get('location_name') || 'Pune Community';
@@ -260,11 +341,16 @@ export async function createEcoPost(formData) {
 
 export async function updateUserProfile(profileData, userId = 1) {
   try {
+    const token = getStoredAuthToken();
+    const headers = {
+      'Content-Type': 'application/json',
+    };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
     const res = await fetch(`${API_BASE}/api/users/me?user_id=${userId}`, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers,
       body: JSON.stringify(profileData),
     });
     if (!res.ok) {
@@ -273,7 +359,6 @@ export async function updateUserProfile(profileData, userId = 1) {
     }
     return await res.json();
   } catch (err) {
-    // Local fallback update
     return {
       ...DEFAULT_USER,
       ...profileData,
@@ -283,7 +368,14 @@ export async function updateUserProfile(profileData, userId = 1) {
 
 export async function fetchUserPosts(userId = 1) {
   try {
-    const res = await fetch(`${API_BASE}/api/users/me/posts?user_id=${userId}`);
+    const token = getStoredAuthToken();
+    const headers = {};
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    const res = await fetch(`${API_BASE}/api/users/me/posts?user_id=${userId}`, {
+      headers,
+    });
     if (!res.ok) throw new Error('Failed to fetch user posts');
     return await res.json();
   } catch (err) {
