@@ -95,6 +95,7 @@ export async function fetchAuthMe() {
 export const DEFAULT_FEED = [
   {
     id: 1,
+    user_id: 2,
     user_name: "Aarav Sharma",
     user_avatar: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=200&auto=format&fit=crop",
     group_name: "MITAOE Green Warriors",
@@ -104,10 +105,24 @@ export const DEFAULT_FEED = [
     photo_url: "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=800&auto=format&fit=crop",
     co2_saved_kg: 40.0,
     points_awarded: 100,
+    likes_count: 24,
+    comments_count: 3,
+    is_liked: false,
+    is_bookmarked: false,
+    latest_comments: [
+      {
+        id: "dc_1",
+        user_name: "Dr. Radhika Kulkarni",
+        user_avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&auto=format&fit=crop",
+        text: "Wonderful native species choice! Neem will thrive along the soil buffer.",
+        created_at: new Date(Date.now() - 2 * 3600000).toISOString()
+      }
+    ],
     timestamp: new Date(Date.now() - 3 * 3600000).toISOString()
   },
   {
     id: 2,
+    user_id: 3,
     user_name: "Rohan Mehta",
     user_avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop",
     group_name: "Pune River Volunteers",
@@ -117,10 +132,24 @@ export const DEFAULT_FEED = [
     photo_url: "https://images.unsplash.com/photo-1618477461853-cf6ed80faba5?w=800&auto=format&fit=crop",
     co2_saved_kg: 12.5,
     points_awarded: 60,
+    likes_count: 18,
+    comments_count: 2,
+    is_liked: false,
+    is_bookmarked: false,
+    latest_comments: [
+      {
+        id: "dc_2",
+        user_name: "Pooja Patil",
+        user_avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop",
+        text: "Thank you for cleaning the trail! Joggers will appreciate this so much.",
+        created_at: new Date(Date.now() - 4 * 3600000).toISOString()
+      }
+    ],
     timestamp: new Date(Date.now() - 8 * 3600000).toISOString()
   },
   {
     id: 3,
+    user_id: 4,
     user_name: "Priya Deshmukh",
     user_avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&auto=format&fit=crop",
     group_name: "Alandi Solar Network",
@@ -130,10 +159,16 @@ export const DEFAULT_FEED = [
     photo_url: "https://images.unsplash.com/photo-1509391365360-2e959784a276?w=800&auto=format&fit=crop",
     co2_saved_kg: 45.0,
     points_awarded: 120,
+    likes_count: 31,
+    comments_count: 1,
+    is_liked: false,
+    is_bookmarked: false,
+    latest_comments: [],
     timestamp: new Date(Date.now() - 26 * 3600000).toISOString()
   },
   {
     id: 4,
+    user_id: 5,
     user_name: "Amit Kulkarni",
     user_avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&auto=format&fit=crop",
     group_name: "Green Leaf Composting Circle",
@@ -143,10 +178,16 @@ export const DEFAULT_FEED = [
     photo_url: "https://images.unsplash.com/photo-1584473457406-6240486418e9?w=800&auto=format&fit=crop",
     co2_saved_kg: 15.0,
     points_awarded: 50,
+    likes_count: 15,
+    comments_count: 0,
+    is_liked: false,
+    is_bookmarked: false,
+    latest_comments: [],
     timestamp: new Date(Date.now() - 30 * 3600000).toISOString()
   },
   {
     id: 5,
+    user_id: 2,
     user_name: "Aarav Sharma",
     user_avatar: "https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=200&auto=format&fit=crop",
     group_name: "MITAOE Green Warriors",
@@ -156,6 +197,11 @@ export const DEFAULT_FEED = [
     photo_url: "https://images.unsplash.com/photo-1485965120184-e220f721d03e?w=800&auto=format&fit=crop",
     co2_saved_kg: 8.5,
     points_awarded: 40,
+    likes_count: 22,
+    comments_count: 0,
+    is_liked: false,
+    is_bookmarked: false,
+    latest_comments: [],
     timestamp: new Date(Date.now() - 48 * 3600000).toISOString()
   }
 ];
