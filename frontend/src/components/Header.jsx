@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
   Compass, Users, ShoppingBag, PlusCircle, Flame, User, LogIn, LogOut, UserPlus,
-  Bell, MessageCircle
+  Bell, MessageCircle, Film
 } from 'lucide-react';
 
 export default function Header({ 
@@ -26,6 +26,7 @@ export default function Header({
 
   const navItems = [
     { id: 'feed',    label: 'Feed',    fullLabel: 'Home Feed',     icon: Flame },
+    { id: 'shorts',  label: 'Shorts',  fullLabel: 'EcoShorts',     icon: Film },
     { id: 'map',     label: 'Map',     fullLabel: 'Community Map', icon: Compass },
     { id: 'groups',  label: 'Groups',  fullLabel: 'My Group',      icon: Users },
     { id: 'rewards', label: 'Rewards', fullLabel: 'Rewards',       icon: ShoppingBag },

@@ -194,6 +194,20 @@ export default function App() {
           </div>
         )}
 
+        {activeTab === 'shorts' && (
+          <div className="page-enter">
+            <Feed
+              user={user}
+              onOpenUploadModal={handleOpenUploadModal}
+              onToast={showToast}
+              setActiveTab={handleTabChange}
+              newlyCreatedPost={newlyCreatedPost}
+              onOpenDMsWithUser={handleOpenDMsWithUser}
+              focusShorts={true}
+            />
+          </div>
+        )}
+
         {activeTab === 'map' && (
           <div className="page-enter">
             <MapPage onOpenUploadModal={handleOpenUploadModal} />

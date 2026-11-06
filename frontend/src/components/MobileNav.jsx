@@ -1,5 +1,5 @@
 import React from 'react';
-import { Flame, Compass, Users, ShoppingBag, Plus, User } from 'lucide-react';
+import { Flame, Film, Compass, Users, ShoppingBag, Plus, User } from 'lucide-react';
 
 export default function MobileNav({ activeTab, setActiveTab, onOpenUploadModal }) {
   return (
@@ -23,19 +23,19 @@ export default function MobileNav({ activeTab, setActiveTab, onOpenUploadModal }
         </span>
       </button>
 
-      {/* Tab 2: Map */}
+      {/* Tab 2: Shorts (EcoShorts) */}
       <button
         type="button"
-        onClick={() => setActiveTab('map')}
+        onClick={() => setActiveTab('shorts')}
         className={`flex flex-col items-center justify-center flex-1 py-1 transition-all cursor-pointer ${
-          activeTab === 'map' ? 'text-[#2C4A3E]' : 'text-[#8C857B] hover:text-[#2C4A3E]'
+          activeTab === 'shorts' ? 'text-[#2C4A3E]' : 'text-[#8C857B] hover:text-[#2C4A3E]'
         }`}
       >
-        <div className={`p-1 rounded-xl transition-colors ${activeTab === 'map' ? 'bg-[#E8EFEA] text-[#587B6C]' : ''}`}>
-          <Compass className="w-5 h-5" />
+        <div className={`p-1 rounded-xl transition-colors ${activeTab === 'shorts' ? 'bg-[#E8EFEA] text-red-600' : ''}`}>
+          <Film className="w-5 h-5" />
         </div>
-        <span className={`text-[10px] tracking-tight mt-0.5 ${activeTab === 'map' ? 'font-bold text-[#2C4A3E]' : 'font-medium'}`}>
-          Map
+        <span className={`text-[10px] tracking-tight mt-0.5 ${activeTab === 'shorts' ? 'font-bold text-[#2C4A3E]' : 'font-medium'}`}>
+          Shorts
         </span>
       </button>
 

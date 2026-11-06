@@ -7,9 +7,9 @@ import {
 import { fetchFeed, togglePostLike, togglePostBookmark, addPostComment, toggleFollowUser } from '../api';
 import ShareModal from './ShareModal';
 
-const REELS = [
+const ECO_SHORTS = [
   {
-    id: 'r1',
+    id: 's1',
     title: 'Alandi Riverbank Cleanup',
     creator: 'Dr. Radhika Kulkarni',
     views: '2.4K',
@@ -18,7 +18,7 @@ const REELS = [
     tag: '#IndrayaniAction'
   },
   {
-    id: 'r2',
+    id: 's2',
     title: 'Balcony Composting in 45s',
     creator: 'Amit Joshi',
     views: '4.1K',
@@ -27,7 +27,7 @@ const REELS = [
     tag: '#ZeroWastePune'
   },
   {
-    id: 'r3',
+    id: 's3',
     title: '5kW Solar Rooftop Turnaround',
     creator: 'Priya Deshmukh',
     views: '1.8K',
@@ -36,7 +36,7 @@ const REELS = [
     tag: '#CleanEnergy'
   },
   {
-    id: 'r4',
+    id: 's4',
     title: 'Pune Metro Student Ride',
     creator: 'Aarav Sharma',
     views: '5.2K',
@@ -46,57 +46,14 @@ const REELS = [
   }
 ];
 
-const STORIES = [
-  {
-    id: 's0',
-    title: 'Your Story',
-    user_name: 'You',
-    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop',
-    image: 'https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=800&auto=format&fit=crop',
-    caption: 'Planting native neem saplings along Alandi riverbank today!',
-    isAdd: true
-  },
-  {
-    id: 's1',
-    title: 'River Cleanup',
-    user_name: 'Pune Clean Air',
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop',
-    image: 'https://images.unsplash.com/photo-1618477461853-cf6ed80faba5?w=800&auto=format&fit=crop',
-    caption: 'Collected 40kg plastic waste from Indrayani banks this morning!'
-  },
-  {
-    id: 's2',
-    title: 'Solar Drive',
-    user_name: 'Alandi Solar',
-    avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=200&auto=format&fit=crop',
-    image: 'https://images.unsplash.com/photo-1509391365360-2e959784a276?w=800&auto=format&fit=crop',
-    caption: 'New 5kW rooftop solar installed in Baner bio-zone!'
-  },
-  {
-    id: 's3',
-    title: 'Compost Club',
-    user_name: 'Green Leaf',
-    avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=200&auto=format&fit=crop',
-    image: 'https://images.unsplash.com/photo-1584473457406-6240486418e9?w=800&auto=format&fit=crop',
-    caption: 'Batch #12 of pure organic black gold ready for kitchen gardens.'
-  },
-  {
-    id: 's4',
-    title: 'Metro Commute',
-    user_name: 'Eco Commuters',
-    avatar: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=200&auto=format&fit=crop',
-    image: 'https://images.unsplash.com/photo-1485965120184-e220f721d03e?w=800&auto=format&fit=crop',
-    caption: 'Zero motorbike day! 14 students rode Pune Metro together.'
-  }
-];
-
 export default function Feed({ 
   user, 
   onOpenUploadModal, 
   onToast, 
   setActiveTab, 
   newlyCreatedPost,
-  onOpenDMsWithUser 
+  onOpenDMsWithUser,
+  focusShorts = false
 }) {
   const [posts, setPosts] = useState([]);
   const [sortBy, setSortBy] = useState('recent');
@@ -105,11 +62,19 @@ export default function Feed({
   const [expandedComments, setExpandedComments] = useState({});
   const [newCommentInputs, setNewCommentInputs] = useState({});
   const [shareModalPost, setShareModalPost] = useState(null);
-  const [activeStory, setActiveStory] = useState(null);
-  const [activeReel, setActiveReel] = useState(null);
+  const [activeShort, setActiveShort] = useState(null);
   const [followingMap, setFollowingMap] = useState({});
   const [doubleTapHeart, setDoubleTapHeart] = useState({});
   const lastTapRef = useRef({});
+
+  useEffect(() => {
+    if (focusShorts) {
+      setTimeout(() => {
+        const el = document.getElementById('eco-shorts-section');
+        if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 150);
+    }
+  }, [focusShorts]);
 
   const handleFollow = async (authorId, authorName) => {
     const isNowFollowing = !followingMap[authorId];
@@ -306,71 +271,30 @@ export default function Feed({
   return (
     <div className="max-w-3xl mx-auto px-3.5 sm:px-4 py-4 sm:py-8">
 
-      {/* Instagram-Style Stories Tray */}
-      <div className="mb-5 sm:mb-6 p-3 sm:p-4 rounded-2xl glass-card border-0 shadow-xs overflow-hidden">
-        <div className="flex items-center gap-3.5 sm:gap-4 overflow-x-auto scrollbar-none pb-1 touch-pan-x">
-          {STORIES.map((s) => (
-            <button
-              key={s.id}
-              onClick={() => {
-                if (s.isAdd) {
-                  onOpenUploadModal();
-                } else {
-                  setActiveStory(s);
-                }
-              }}
-              className="flex flex-col items-center gap-1.5 shrink-0 focus:outline-none group cursor-pointer"
-            >
-              <div className="relative">
-                <div className={`w-14 h-14 sm:w-16 sm:h-16 rounded-full p-[2.5px] transition-transform duration-200 group-hover:scale-105 ${
-                  s.isAdd 
-                    ? 'border-2 border-dashed border-[#587B6C]' 
-                    : 'bg-gradient-to-tr from-emerald-500 via-[#587B6C] to-lime-400 shadow-xs'
-                }`}>
-                  <img
-                    src={s.isAdd && user?.avatar_url ? user.avatar_url : s.avatar}
-                    alt={s.title}
-                    className="w-full h-full rounded-full object-cover border-2 border-white"
-                  />
-                </div>
-                {s.isAdd && (
-                  <div className="absolute bottom-0 right-0 w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-[#587B6C] text-white flex items-center justify-center border-2 border-white text-xs font-bold shadow-xs">
-                    +
-                  </div>
-                )}
-              </div>
-              <span className="text-[11px] sm:text-xs font-medium text-[#2C4A3E] max-w-[64px] truncate text-center">
-                {s.isAdd ? 'Your Action' : s.title}
-              </span>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* YouTube Shorts & Instagram Reels Carousel */}
-      <div className="mb-5 sm:mb-6 p-3 sm:p-4 rounded-2xl glass-card border-0 shadow-xs">
+      {/* EcoShorts Section (YouTube Shorts style) */}
+      <div id="eco-shorts-section" className="mb-5 sm:mb-6 p-3.5 sm:p-4 rounded-2xl glass-card border-0 shadow-xs">
         <div className="flex items-center justify-between mb-2.5 px-0.5">
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-2">
             <div className="w-5 h-5 rounded-md bg-red-600 flex items-center justify-center text-white shadow-xs">
               <Play className="w-2.5 h-2.5 fill-white" />
             </div>
-            <h3 className="font-display font-bold text-xs uppercase tracking-wider text-[#2C4A3E]">
-              Pune Eco Shorts & Reels
+            <h3 className="font-display font-bold text-sm tracking-tight text-[#2C4A3E]">
+              EcoShorts
             </h3>
           </div>
-          <span className="text-[10px] text-[#8C857B] font-medium">Quick Video Proofs</span>
+          <span className="text-[10px] text-[#8C857B] font-medium">Quick 30s Proofs</span>
         </div>
 
         <div className="flex items-center gap-3 overflow-x-auto scrollbar-none pb-1 touch-pan-x">
-          {REELS.map((reel) => (
+          {ECO_SHORTS.map((short) => (
             <div
-              key={reel.id}
-              onClick={() => setActiveReel(reel)}
+              key={short.id}
+              onClick={() => setActiveShort(short)}
               className="relative w-32 sm:w-36 h-48 sm:h-52 rounded-2xl overflow-hidden shrink-0 group cursor-pointer border border-[#E2DDD1] shadow-xs hover:shadow-md transition-all"
             >
               <img
-                src={reel.image}
-                alt={reel.title}
+                src={short.image}
+                alt={short.title}
                 className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
@@ -380,15 +304,15 @@ export default function Feed({
               </div>
 
               <div className="absolute top-2.5 left-2.5 px-1.5 py-0.5 rounded-md bg-black/60 text-white text-[9px] font-bold">
-                {reel.duration}
+                {short.duration}
               </div>
 
               <div className="absolute bottom-2.5 left-2.5 right-2.5 text-white">
-                <span className="text-[9px] font-semibold text-emerald-300 block mb-0.5">{reel.tag}</span>
-                <p className="text-[11px] font-bold leading-tight line-clamp-2 drop-shadow-xs">{reel.title}</p>
+                <span className="text-[9px] font-semibold text-emerald-300 block mb-0.5">{short.tag}</span>
+                <p className="text-[11px] font-bold leading-tight line-clamp-2 drop-shadow-xs">{short.title}</p>
                 <div className="flex items-center justify-between text-[9px] text-white/80 mt-1.5">
-                  <span className="truncate max-w-[70px]">{reel.creator}</span>
-                  <span className="font-semibold">{reel.views} views</span>
+                  <span className="truncate max-w-[70px]">{short.creator}</span>
+                  <span className="font-semibold">{short.views} views</span>
                 </div>
               </div>
             </div>
@@ -755,92 +679,29 @@ export default function Feed({
         onToast={onToast}
       />
 
-      {/* Story View Modal */}
-      {activeStory && (
+      {/* EcoShorts Video Modal */}
+      {activeShort && (
         <div 
-          onClick={() => setActiveStory(null)}
-          className="fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in"
-        >
-          <div 
-            onClick={(e) => e.stopPropagation()}
-            className="relative max-w-sm w-full bg-[#1A2621] rounded-3xl overflow-hidden border border-white/20 shadow-2xl"
-          >
-            {/* Top progress bar */}
-            <div className="absolute top-3 left-3 right-3 h-1 bg-white/30 rounded-full overflow-hidden z-20">
-              <div className="h-full bg-white animate-[pulse_3s_ease-in-out_infinite]" />
-            </div>
-
-            {/* Story Header */}
-            <div className="absolute top-6 left-3 right-3 flex items-center justify-between z-20">
-              <div className="flex items-center gap-2">
-                <img
-                  src={activeStory.avatar}
-                  alt={activeStory.user_name}
-                  className="w-9 h-9 rounded-full object-cover border-2 border-white"
-                />
-                <div>
-                  <p className="text-white font-bold text-xs">{activeStory.user_name}</p>
-                  <p className="text-white/70 text-[10px]">{activeStory.title}</p>
-                </div>
-              </div>
-              <button
-                onClick={() => setActiveStory(null)}
-                className="w-8 h-8 rounded-full bg-black/40 text-white flex items-center justify-center text-sm font-bold hover:bg-black/60 cursor-pointer"
-              >
-                ✕
-              </button>
-            </div>
-
-            {/* Story Image */}
-            <div className="relative h-96 w-full bg-black">
-              <img
-                src={activeStory.image}
-                alt={activeStory.title}
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30" />
-            </div>
-
-            {/* Story Caption */}
-            <div className="p-4 bg-[#1A2621] text-white">
-              <p className="text-xs leading-relaxed text-white/90">{activeStory.caption}</p>
-              <button
-                onClick={() => {
-                  setActiveStory(null);
-                  onOpenUploadModal();
-                }}
-                className="mt-3 w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer"
-              >
-                🌱 Join This Action Drive
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* YouTube Shorts / Instagram Reel Video Modal */}
-      {activeReel && (
-        <div 
-          onClick={() => setActiveReel(null)}
+          onClick={() => setActiveShort(null)}
           className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in"
         >
           <div 
             onClick={(e) => e.stopPropagation()}
             className="relative max-w-xs sm:max-w-sm w-full bg-[#121A15] rounded-3xl overflow-hidden border border-white/20 shadow-2xl flex flex-col"
           >
-            {/* Reel Header */}
+            {/* Short Header */}
             <div className="p-4 flex items-center justify-between z-20 bg-gradient-to-b from-black/80 to-transparent">
               <div className="flex items-center gap-2">
                 <div className="w-8 h-8 rounded-full bg-red-600 flex items-center justify-center text-white">
                   <Play className="w-4 h-4 fill-white" />
                 </div>
                 <div>
-                  <p className="text-white font-bold text-xs">{activeReel.creator}</p>
-                  <p className="text-emerald-400 text-[10px] font-semibold">{activeReel.tag}</p>
+                  <p className="text-white font-bold text-xs">{activeShort.creator}</p>
+                  <p className="text-emerald-400 text-[10px] font-semibold">{activeShort.tag}</p>
                 </div>
               </div>
               <button
-                onClick={() => setActiveReel(null)}
+                onClick={() => setActiveShort(null)}
                 className="w-8 h-8 rounded-full bg-white/20 text-white flex items-center justify-center text-sm font-bold hover:bg-white/30 cursor-pointer"
               >
                 ✕
@@ -850,8 +711,8 @@ export default function Feed({
             {/* Video preview simulation */}
             <div className="relative h-96 w-full bg-black group">
               <img
-                src={activeReel.image}
-                alt={activeReel.title}
+                src={activeShort.image}
+                alt={activeShort.title}
                 className="w-full h-full object-cover opacity-90"
               />
               <div className="absolute inset-0 flex items-center justify-center">
@@ -860,25 +721,25 @@ export default function Feed({
                 </div>
               </div>
               <div className="absolute bottom-3 right-3 px-2 py-0.5 rounded-md bg-black/70 text-white text-[10px] font-bold">
-                {activeReel.duration}
+                {activeShort.duration}
               </div>
             </div>
 
-            {/* Reel Footer & CTA */}
+            {/* Short Footer & CTA */}
             <div className="p-4 bg-[#121A15] text-white space-y-2">
-              <h4 className="font-display font-bold text-sm leading-tight text-white">{activeReel.title}</h4>
-              <div className="flex items-center justify-between text-xs text-white/70 pt-1">
-                <span>👁️ {activeReel.views} views</span>
-                <span className="text-emerald-400 font-medium">Pune Verified Video Proof</span>
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-red-500 bg-red-500/10 px-2 py-0.5 rounded-full">EcoShorts</span>
+                <span className="text-xs text-white/70">👁️ {activeShort.views} views</span>
               </div>
+              <h4 className="font-display font-bold text-sm leading-tight text-white">{activeShort.title}</h4>
               <button
                 onClick={() => {
-                  setActiveReel(null);
+                  setActiveShort(null);
                   onOpenUploadModal();
                 }}
                 className="mt-2 w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer"
               >
-                📹 Upload Your 30s Eco Reel
+                📹 Upload Your 30s EcoShort
               </button>
             </div>
           </div>
