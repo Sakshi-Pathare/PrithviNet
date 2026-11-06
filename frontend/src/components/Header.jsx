@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  Compass, Users, ShoppingBag, PlusCircle, Flame, User, LogIn, LogOut, UserPlus
+  Compass, Users, ShoppingBag, PlusCircle, Flame, User, LogIn, LogOut, UserPlus,
+  Bell, MessageCircle
 } from 'lucide-react';
 
 export default function Header({ 
@@ -9,7 +10,11 @@ export default function Header({
   setActiveTab, 
   onOpenUploadModal, 
   onOpenAuthModal, 
-  onLogout 
+  onLogout,
+  onOpenNotifications,
+  unreadNotificationsCount = 0,
+  onOpenDMs,
+  unreadDMsCount = 0
 }) {
   const [scrolled, setScrolled] = useState(false);
 
@@ -88,7 +93,37 @@ export default function Header({
           </nav>
 
           {/* Right Controls */}
-          <div className="flex items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-2.5">
+
+            {/* Direct Messages Icon Button (Instagram DM / WhatsApp) */}
+            <button
+              type="button"
+              onClick={onOpenDMs}
+              className="relative p-2 rounded-2xl bg-white/90 border border-[#E2DDD1] hover:border-[#7C9D8E]/50 hover:bg-[#E8EFEA] text-[#2C4A3E] transition-all cursor-pointer shadow-xs"
+              title="Direct Messages"
+            >
+              <MessageCircle className="w-4 h-4 text-[#587B6C]" />
+              {unreadDMsCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-emerald-600 text-white text-[9px] font-bold flex items-center justify-center ring-2 ring-white">
+                  {unreadDMsCount}
+                </span>
+              )}
+            </button>
+
+            {/* Notifications Bell Icon Button (Instagram / Facebook Activity) */}
+            <button
+              type="button"
+              onClick={onOpenNotifications}
+              className="relative p-2 rounded-2xl bg-white/90 border border-[#E2DDD1] hover:border-[#7C9D8E]/50 hover:bg-[#E8EFEA] text-[#2C4A3E] transition-all cursor-pointer shadow-xs"
+              title="Notifications & Follow Requests"
+            >
+              <Bell className="w-4 h-4 text-[#587B6C]" />
+              {unreadNotificationsCount > 0 && (
+                <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-red-500 text-white text-[9px] font-bold flex items-center justify-center ring-2 ring-white animate-pulse">
+                  {unreadNotificationsCount}
+                </span>
+              )}
+            </button>
 
             {user ? (
               <>

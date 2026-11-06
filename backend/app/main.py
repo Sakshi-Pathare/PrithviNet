@@ -7,7 +7,7 @@ from fastapi.staticfiles import StaticFiles
 from app.config import settings
 from app.database import engine, Base, SessionLocal
 from app.seed_data import seed_initial_data
-from app.routers import posts, map as map_router, rewards, groups, users, auth
+from app.routers import posts, map as map_router, rewards, groups, users, auth, social
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -47,6 +47,7 @@ app.include_router(map_router.router)
 app.include_router(rewards.router)
 app.include_router(groups.router)
 app.include_router(users.router)
+app.include_router(social.router)
 
 @app.get("/")
 def root():

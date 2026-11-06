@@ -530,3 +530,238 @@ export async function fetchCommunityStats() {
     };
   }
 }
+
+// ==========================================
+// NOTIFICATIONS & FOLLOWS (INSTAGRAM / FB)
+// ==========================================
+
+export async function fetchNotifications() {
+  try {
+    const token = getStoredAuthToken();
+    const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+    const res = await fetch(`${API_BASE}/api/social/notifications`, { headers });
+    if (!res.ok) throw new Error('Failed to fetch notifications');
+    return await res.json();
+  } catch (err) {
+    return [
+      {
+        id: 101,
+        sender_name: "Pooja Patil",
+        sender_avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop",
+        notification_type: "follow_request",
+        title: "Follow Request",
+        message: "requested to follow your Pune eco-actions stream.",
+        status: "active",
+        is_read: false,
+        created_at: new Date(Date.now() - 15 * 60000).toISOString()
+      },
+      {
+        id: 102,
+        sender_name: "Dr. Radhika Kulkarni",
+        sender_avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&auto=format&fit=crop",
+        notification_type: "like",
+        title: "New Cheer 💚",
+        message: "cheered on your Alandi Riverbank Tree Planting action!",
+        status: "active",
+        is_read: false,
+        created_at: new Date(Date.now() - 60 * 60000).toISOString()
+      },
+      {
+        id: 103,
+        sender_name: "PrithviNet Team",
+        sender_avatar: "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=200&auto=format&fit=crop",
+        notification_type: "points",
+        title: "Green Points Milestone 🌱",
+        message: "Welcome bonus credited! +100 Green Points added to your wallet.",
+        status: "active",
+        is_read: true,
+        created_at: new Date(Date.now() - 180 * 60000).toISOString()
+      }
+    ];
+  }
+}
+
+export async function markNotificationRead(id) {
+  try {
+    const token = getStoredAuthToken();
+    const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+    await fetch(`${API_BASE}/api/social/notifications/${id}/read`, {
+      method: 'POST',
+      headers
+    });
+  } catch (e) {}
+}
+
+export async function markAllNotificationsRead() {
+  try {
+    const token = getStoredAuthToken();
+    const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+    await fetch(`${API_BASE}/api/social/notifications/read-all`, {
+      method: 'POST',
+      headers
+    });
+  } catch (e) {}
+}
+
+export async function respondFollowRequest(id, action) {
+  try {
+    const token = getStoredAuthToken();
+    const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+    const res = await fetch(`${API_BASE}/api/social/notifications/${id}/respond-follow?action=${action}`, {
+      method: 'POST',
+      headers
+    });
+    if (!res.ok) throw new Error('Failed to respond to follow request');
+    return await res.json();
+  } catch (e) {
+    return { status: "success", action, id };
+  }
+}
+
+export async function toggleFollowUser(targetId) {
+  const token = getStoredAuthToken();
+  if (!token) throw new Error('Please sign in to follow community members.');
+  const res = await fetch(`${API_BASE}/api/social/users/${targetId}/follow`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.detail || 'Could not update follow status');
+  }
+  return await res.json();
+}
+
+// ==========================================
+// DIRECT MESSAGES (INSTAGRAM DM / WHATSAPP)
+// ==========================================
+
+export async function fetchConversations() {
+  try {
+    const token = getStoredAuthToken();
+    const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+    const res = await fetch(`${API_BASE}/api/social/conversations`, { headers });
+    if (!res.ok) throw new Error('Failed to fetch conversations');
+    return await res.json();
+  } catch (err) {
+    return [
+      {
+        id: "g_1",
+        target_type: "group",
+        target_id: 1,
+        name: "MITAOE Green Warriors (Group)",
+        avatar: "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?w=200&auto=format&fit=crop",
+        last_message: "Sunday cleanup drive briefing at 7:30 AM! 🌱",
+        last_message_time: new Date().toISOString(),
+        unread_count: 2,
+        is_online: true
+      },
+      {
+        id: "u_2",
+        target_type: "user",
+        target_id: 2,
+        name: "Dr. Radhika Kulkarni",
+        avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&auto=format&fit=crop",
+        last_message: "Bring canvas gloves if you have them! See you there.",
+        last_message_time: new Date(Date.now() - 15 * 60000).toISOString(),
+        unread_count: 1,
+        is_online: true
+      },
+      {
+        id: "u_3",
+        target_type: "user",
+        target_id: 3,
+        name: "Amit Joshi",
+        avatar: "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=200&auto=format&fit=crop",
+        last_message: "Hey! Can I borrow 2 extra sapling trowels?",
+        last_message_time: new Date(Date.now() - 120 * 60000).toISOString(),
+        unread_count: 0,
+        is_online: false
+      }
+    ];
+  }
+}
+
+export async function fetchMessageThread(targetType, targetId) {
+  try {
+    const token = getStoredAuthToken();
+    const headers = token ? { 'Authorization': `Bearer ${token}` } : {};
+    const res = await fetch(`${API_BASE}/api/social/messages/${targetType}/${targetId}`, { headers });
+    if (!res.ok) throw new Error('Failed to fetch messages');
+    return await res.json();
+  } catch (err) {
+    return [
+      {
+        id: 1,
+        sender_id: targetId,
+        sender_name: "Dr. Radhika Kulkarni",
+        sender_avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&auto=format&fit=crop",
+        text: "Namaste! Wonderful job on the riverbank planting action. Are you coming to this weekend's drive?",
+        reaction: "🌱",
+        is_read: true,
+        created_at: new Date(Date.now() - 30 * 60000).toISOString(),
+        is_mine: false
+      },
+      {
+        id: 2,
+        sender_id: 1,
+        sender_name: "You",
+        sender_avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop",
+        text: "Yes definitely! What time is everyone assembling?",
+        reaction: null,
+        is_read: true,
+        created_at: new Date(Date.now() - 25 * 60000).toISOString(),
+        is_mine: true
+      },
+      {
+        id: 3,
+        sender_id: targetId,
+        sender_name: "Dr. Radhika Kulkarni",
+        sender_avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=200&auto=format&fit=crop",
+        text: "Around 7:30 AM near Alandi bridge. Bring canvas gloves if you have them! See you there. 💚",
+        reaction: "👏",
+        is_read: true,
+        created_at: new Date(Date.now() - 15 * 60000).toISOString(),
+        is_mine: false
+      }
+    ];
+  }
+}
+
+export async function sendChatMessage(targetType, targetId, text, reaction = null) {
+  try {
+    const token = getStoredAuthToken();
+    const headers = { 'Content-Type': 'application/json' };
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    const res = await fetch(`${API_BASE}/api/social/messages/${targetType}/${targetId}`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({ text, reaction })
+    });
+    if (!res.ok) throw new Error('Failed to send message');
+    return await res.json();
+  } catch (err) {
+    return {
+      id: Date.now(),
+      sender_id: 1,
+      sender_name: "You",
+      sender_avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop",
+      text,
+      reaction,
+      is_read: false,
+      created_at: new Date().toISOString(),
+      is_mine: true
+    };
+  }
+}
+
+export async function reactToChatMessage(messageId, reaction) {
+  try {
+    await fetch(`${API_BASE}/api/social/messages/${messageId}/react?reaction=${encodeURIComponent(reaction)}`, {
+      method: 'POST'
+    });
+  } catch (e) {}
+}

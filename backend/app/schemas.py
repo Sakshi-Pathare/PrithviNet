@@ -162,3 +162,58 @@ class RedemptionResponse(BaseModel):
     new_green_points: int
     redeemed_at: datetime
     instructions: str
+
+# --- Notification Schemas ---
+class NotificationResponse(BaseModel):
+    id: int
+    user_id: int
+    sender_id: Optional[int] = None
+    sender_name: Optional[str] = None
+    sender_avatar: Optional[str] = None
+    notification_type: str  # 'follow_request', 'like', 'comment', 'points', 'announcement'
+    title: str
+    message: str
+    post_id: Optional[int] = None
+    is_read: bool = False
+    status: str = "active"  # 'active', 'accepted', 'declined'
+    created_at: datetime
+
+    model_config = ConfigDict(from_attributes=True)
+
+class FollowToggleResponse(BaseModel):
+    target_user_id: int
+    is_following: bool
+    status: str
+    followers_count: int
+
+# --- Chat & Messaging Schemas ---
+class ChatMessageRequest(BaseModel):
+    text: str
+    reaction: Optional[str] = None
+
+class ChatMessageResponse(BaseModel):
+    id: int
+    sender_id: int
+    sender_name: str
+    sender_avatar: Optional[str] = None
+    recipient_id: Optional[int] = None
+    group_id: Optional[int] = None
+    text: str
+    reaction: Optional[str] = None
+    is_read: bool = False
+    created_at: datetime
+    is_mine: bool = False
+
+    model_config = ConfigDict(from_attributes=True)
+
+class ConversationResponse(BaseModel):
+    id: str  # e.g. "u_2" or "g_1"
+    target_type: str  # "user" or "group"
+    target_id: int
+    name: str
+    avatar: str
+    last_message: str
+    last_message_time: datetime
+    unread_count: int = 0
+    is_online: bool = True
+

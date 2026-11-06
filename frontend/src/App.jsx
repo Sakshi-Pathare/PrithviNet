@@ -9,8 +9,14 @@ import RewardsPage from './components/RewardsPage';
 import ProfilePage from './components/ProfilePage';
 import UploadModal from './components/UploadModal';
 import AuthModal from './components/AuthModal';
+import NotificationsDrawer from './components/NotificationsDrawer';
+import DirectMessagesModal from './components/DirectMessagesModal';
 import Toast from './components/Toast';
-import { fetchUserMe, fetchAuthMe, clearStoredAuthToken } from './api';
+import { 
+  fetchUserMe, fetchAuthMe, clearStoredAuthToken,
+  fetchNotifications, markNotificationRead, markAllNotificationsRead, respondFollowRequest,
+  fetchConversations
+} from './api';
 
 export default function App() {
   const [user, setUser] = useState(null);
@@ -20,6 +26,13 @@ export default function App() {
   const [authModalMode, setAuthModalMode] = useState('login');
   const [toast, setToast] = useState(null);
   const [newlyCreatedPost, setNewlyCreatedPost] = useState(null);
+
+  // Social & Messaging State
+  const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [isDMsOpen, setIsDMsOpen] = useState(false);
+  const [dmsTargetUser, setDmsTargetUser] = useState(null);
+  const [unreadDMsCount, setUnreadDMsCount] = useState(2);
 
   useEffect(() => {
     async function loadUser() {
@@ -35,6 +48,43 @@ export default function App() {
     }
     loadUser();
   }, []);
+
+  // Load notifications and conversations periodically
+  useEffect(() => {
+    async function loadSocial() {
+      try {
+        const notifs = await fetchNotifications();
+        setNotifications(notifs);
+        const convs = await fetchConversations();
+        const unread = convs.reduce((acc, c) => acc + (c.unread_count || 0), 0);
+        setUnreadDMsCount(unread);
+      } catch (e) {}
+    }
+    loadSocial();
+  }, [user]);
+
+  const unreadNotificationsCount = notifications.filter(n => !n.is_read).length;
+
+  const handleMarkNotificationRead = async (id) => {
+    setNotifications(prev => prev.map(n => n.id === id ? { ...n, is_read: true } : n));
+    await markNotificationRead(id);
+  };
+
+  const handleMarkAllNotificationsRead = async () => {
+    setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+    await markAllNotificationsRead();
+    showToast({ type: 'success', title: 'Marked All Read', message: 'All notifications cleared.' });
+  };
+
+  const handleRespondFollow = async (id, action) => {
+    setNotifications(prev => prev.map(n => n.id === id ? { ...n, status: action, is_read: true } : n));
+    await respondFollowRequest(id, action);
+  };
+
+  const handleOpenDMsWithUser = (targetUser) => {
+    setDmsTargetUser(targetUser);
+    setIsDMsOpen(true);
+  };
 
   const showToast = ({ type = 'success', title, message }) => {
     setToast({ type, title, message });
@@ -120,6 +170,10 @@ export default function App() {
           onOpenUploadModal={handleOpenUploadModal}
           onOpenAuthModal={handleOpenAuthModal}
           onLogout={handleLogout}
+          onOpenNotifications={() => setIsNotificationsOpen(true)}
+          unreadNotificationsCount={unreadNotificationsCount}
+          onOpenDMs={() => { setDmsTargetUser(null); setIsDMsOpen(true); }}
+          unreadDMsCount={unreadDMsCount}
         />
         {activeTab !== 'map' && <CommunityStatsBar />}
       </div>
@@ -135,6 +189,7 @@ export default function App() {
               onToast={showToast}
               setActiveTab={handleTabChange}
               newlyCreatedPost={newlyCreatedPost}
+              onOpenDMsWithUser={handleOpenDMsWithUser}
             />
           </div>
         )}
@@ -202,6 +257,26 @@ export default function App() {
         onAuthSuccess={handleAuthSuccess}
         onToast={showToast}
         initialMode={authModalMode}
+      />
+
+      {/* ── Notifications & Follow Requests Drawer (Instagram / FB) ── */}
+      <NotificationsDrawer
+        isOpen={isNotificationsOpen}
+        onClose={() => setIsNotificationsOpen(false)}
+        notifications={notifications}
+        onMarkRead={handleMarkNotificationRead}
+        onMarkAllRead={handleMarkAllNotificationsRead}
+        onRespondFollow={handleRespondFollow}
+        onToast={showToast}
+      />
+
+      {/* ── Direct Messages & Instant Chat Modal (Instagram DM / WhatsApp) ── */}
+      <DirectMessagesModal
+        isOpen={isDMsOpen}
+        onClose={() => setIsDMsOpen(false)}
+        currentUser={user}
+        onToast={showToast}
+        initialTargetUser={dmsTargetUser}
       />
 
       {/* ── Toast Notifications ── */}

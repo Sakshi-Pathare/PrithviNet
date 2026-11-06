@@ -127,3 +127,50 @@ class Redemption(Base):
     # Relationships
     user = relationship("User", back_populates="redemptions")
     reward = relationship("RewardItem", back_populates="redemptions")
+
+class UserFollow(Base):
+    __tablename__ = "user_follows"
+
+    id = Column(Integer, primary_key=True, index=True)
+    follower_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    following_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    status = Column(String(20), default="accepted") # 'accepted' or 'pending'
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    follower = relationship("User", foreign_keys=[follower_id])
+    following = relationship("User", foreign_keys=[following_id])
+
+class Notification(Base):
+    __tablename__ = "notifications"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    sender_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    notification_type = Column(String(50), nullable=False) # 'follow_request', 'like', 'comment', 'points', 'announcement'
+    title = Column(String(150), nullable=False)
+    message = Column(Text, nullable=False)
+    post_id = Column(Integer, ForeignKey("eco_action_posts.id"), nullable=True)
+    is_read = Column(Integer, default=0) # 0 for false, 1 for true
+    status = Column(String(20), default="active") # 'active', 'accepted', 'declined'
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    user = relationship("User", foreign_keys=[user_id])
+    sender = relationship("User", foreign_keys=[sender_id])
+    post = relationship("EcoActionPost")
+
+class ChatMessage(Base):
+    __tablename__ = "chat_messages"
+
+    id = Column(Integer, primary_key=True, index=True)
+    sender_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    recipient_id = Column(Integer, ForeignKey("users.id"), nullable=True, index=True)
+    group_id = Column(Integer, ForeignKey("community_groups.id"), nullable=True, index=True)
+    text = Column(Text, nullable=False)
+    reaction = Column(String(20), nullable=True)
+    is_read = Column(Integer, default=0) # 0 for unread, 1 for read
+    created_at = Column(DateTime, default=datetime.utcnow)
+
+    sender = relationship("User", foreign_keys=[sender_id])
+    recipient = relationship("User", foreign_keys=[recipient_id])
+    group = relationship("CommunityGroup", foreign_keys=[group_id])
+

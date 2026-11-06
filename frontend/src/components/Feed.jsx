@@ -2,10 +2,49 @@ import React, { useState, useEffect, useRef } from 'react';
 import { 
   CheckCircle2, MapPin, Sparkles, Clock, Heart, 
   Share2, Users, TrendingUp, Leaf, Plus, MessageSquare, Send,
-  Bookmark
+  Bookmark, UserPlus, Play, MessageCircle, SendHorizontal
 } from 'lucide-react';
-import { fetchFeed, togglePostLike, togglePostBookmark, addPostComment } from '../api';
+import { fetchFeed, togglePostLike, togglePostBookmark, addPostComment, toggleFollowUser } from '../api';
 import ShareModal from './ShareModal';
+
+const REELS = [
+  {
+    id: 'r1',
+    title: 'Alandi Riverbank Cleanup',
+    creator: 'Dr. Radhika Kulkarni',
+    views: '2.4K',
+    duration: '0:32',
+    image: 'https://images.unsplash.com/photo-1618477461853-cf6ed80faba5?w=500&auto=format&fit=crop',
+    tag: '#IndrayaniAction'
+  },
+  {
+    id: 'r2',
+    title: 'Balcony Composting in 45s',
+    creator: 'Amit Joshi',
+    views: '4.1K',
+    duration: '0:45',
+    image: 'https://images.unsplash.com/photo-1584473457406-6240486418e9?w=500&auto=format&fit=crop',
+    tag: '#ZeroWastePune'
+  },
+  {
+    id: 'r3',
+    title: '5kW Solar Rooftop Turnaround',
+    creator: 'Priya Deshmukh',
+    views: '1.8K',
+    duration: '0:28',
+    image: 'https://images.unsplash.com/photo-1509391365360-2e959784a276?w=500&auto=format&fit=crop',
+    tag: '#CleanEnergy'
+  },
+  {
+    id: 'r4',
+    title: 'Pune Metro Student Ride',
+    creator: 'Aarav Sharma',
+    views: '5.2K',
+    duration: '0:40',
+    image: 'https://images.unsplash.com/photo-1485965120184-e220f721d03e?w=500&auto=format&fit=crop',
+    tag: '#EcoCommute'
+  }
+];
 
 const STORIES = [
   {
@@ -51,7 +90,14 @@ const STORIES = [
   }
 ];
 
-export default function Feed({ user, onOpenUploadModal, onToast, setActiveTab, newlyCreatedPost }) {
+export default function Feed({ 
+  user, 
+  onOpenUploadModal, 
+  onToast, 
+  setActiveTab, 
+  newlyCreatedPost,
+  onOpenDMsWithUser 
+}) {
   const [posts, setPosts] = useState([]);
   const [sortBy, setSortBy] = useState('recent');
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -60,8 +106,47 @@ export default function Feed({ user, onOpenUploadModal, onToast, setActiveTab, n
   const [newCommentInputs, setNewCommentInputs] = useState({});
   const [shareModalPost, setShareModalPost] = useState(null);
   const [activeStory, setActiveStory] = useState(null);
+  const [activeReel, setActiveReel] = useState(null);
+  const [followingMap, setFollowingMap] = useState({});
   const [doubleTapHeart, setDoubleTapHeart] = useState({});
   const lastTapRef = useRef({});
+
+  const handleFollow = async (authorId, authorName) => {
+    const isNowFollowing = !followingMap[authorId];
+    setFollowingMap(prev => ({ ...prev, [authorId]: isNowFollowing }));
+
+    try {
+      await toggleFollowUser(authorId);
+      onToast?.({
+        type: 'success',
+        title: isNowFollowing ? 'Following Community Member! 🤝' : 'Unfollowed',
+        message: isNowFollowing ? `You are now following ${authorName}'s eco-updates!` : `Unfollowed ${authorName}.`
+      });
+    } catch (err) {
+      onToast?.({
+        type: 'info',
+        title: 'Sign In to Follow',
+        message: err.message || 'Please sign in to follow volunteers.'
+      });
+    }
+  };
+
+  const handleWhatsAppShare = (post) => {
+    const text = encodeURIComponent(
+      `🌱 *PrithviNet Pune Verified Eco-Action*\n\n` +
+      `*Action:* ${post.description}\n` +
+      `*By:* ${post.user_name} (${post.group_name || 'Pune Community'})\n` +
+      `*Location:* ${post.location_name}\n` +
+      `*Impact:* +${post.co2_saved_kg} kg CO₂ offset | +${post.points_awarded} Green Points awarded\n\n` +
+      `Join Pune's Green Movement on PrithviNet:`
+    );
+    window.open(`https://wa.me/?text=${text}`, '_blank');
+    onToast?.({
+      type: 'success',
+      title: 'Opening WhatsApp! 📲',
+      message: 'Share your verified environmental action with friends and WhatsApp groups.'
+    });
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -262,6 +347,55 @@ export default function Feed({ user, onOpenUploadModal, onToast, setActiveTab, n
         </div>
       </div>
 
+      {/* YouTube Shorts & Instagram Reels Carousel */}
+      <div className="mb-5 sm:mb-6 p-3 sm:p-4 rounded-2xl glass-card border-0 shadow-xs">
+        <div className="flex items-center justify-between mb-2.5 px-0.5">
+          <div className="flex items-center gap-1.5">
+            <div className="w-5 h-5 rounded-md bg-red-600 flex items-center justify-center text-white shadow-xs">
+              <Play className="w-2.5 h-2.5 fill-white" />
+            </div>
+            <h3 className="font-display font-bold text-xs uppercase tracking-wider text-[#2C4A3E]">
+              Pune Eco Shorts & Reels
+            </h3>
+          </div>
+          <span className="text-[10px] text-[#8C857B] font-medium">Quick Video Proofs</span>
+        </div>
+
+        <div className="flex items-center gap-3 overflow-x-auto scrollbar-none pb-1 touch-pan-x">
+          {REELS.map((reel) => (
+            <div
+              key={reel.id}
+              onClick={() => setActiveReel(reel)}
+              className="relative w-32 sm:w-36 h-48 sm:h-52 rounded-2xl overflow-hidden shrink-0 group cursor-pointer border border-[#E2DDD1] shadow-xs hover:shadow-md transition-all"
+            >
+              <img
+                src={reel.image}
+                alt={reel.title}
+                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
+              
+              <div className="absolute top-2.5 right-2.5 w-6 h-6 rounded-full bg-black/50 backdrop-blur-xs flex items-center justify-center text-white text-[10px]">
+                <Play className="w-3 h-3 fill-white" />
+              </div>
+
+              <div className="absolute top-2.5 left-2.5 px-1.5 py-0.5 rounded-md bg-black/60 text-white text-[9px] font-bold">
+                {reel.duration}
+              </div>
+
+              <div className="absolute bottom-2.5 left-2.5 right-2.5 text-white">
+                <span className="text-[9px] font-semibold text-emerald-300 block mb-0.5">{reel.tag}</span>
+                <p className="text-[11px] font-bold leading-tight line-clamp-2 drop-shadow-xs">{reel.title}</p>
+                <div className="flex items-center justify-between text-[9px] text-white/80 mt-1.5">
+                  <span className="truncate max-w-[70px]">{reel.creator}</span>
+                  <span className="font-semibold">{reel.views} views</span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* Hero Welcome Banner — Glassmorphism */}
       <div className="relative mb-5 sm:mb-8 p-5 sm:p-8 rounded-2xl sm:rounded-3xl overflow-hidden glass-card border-0">
         <div className="absolute -top-10 -right-10 w-44 sm:w-52 h-44 sm:h-52 rounded-full bg-gradient-to-br from-[#7C9D8E]/20 to-[#587B6C]/10 blur-3xl pointer-events-none" />
@@ -390,6 +524,21 @@ export default function Feed({ user, onOpenUploadModal, onToast, setActiveTab, n
                       <div className="min-w-0">
                         <div className="flex items-center gap-1.5 flex-wrap">
                           <span className="font-display font-bold text-[#2C4A3E] text-xs sm:text-sm truncate">{post.user_name}</span>
+                          
+                          {/* Instagram-Style Follow Button */}
+                          {post.user_id && post.user_id !== user?.id && (
+                            <button
+                              onClick={() => handleFollow(post.user_id, post.user_name)}
+                              className={`px-2 py-0.5 rounded-full text-[10px] font-bold transition-all cursor-pointer ${
+                                followingMap[post.user_id]
+                                  ? 'bg-[#E8EFEA] text-[#2C4A3E] border border-[#7C9D8E]/40'
+                                  : 'bg-[#2C4A3E] text-white hover:bg-[#587B6C] shadow-xs'
+                              }`}
+                            >
+                              {followingMap[post.user_id] ? 'Following ✓' : '+ Follow'}
+                            </button>
+                          )}
+
                           {post.group_name && (
                             <span className="px-2 py-0.5 rounded-full bg-[#E8EFEA]/80 backdrop-blur-sm border border-[#7C9D8E]/25 text-[#2C4A3E] text-[10px] sm:text-[11px] font-medium flex items-center gap-1 truncate max-w-[150px] sm:max-w-none">
                               <Users className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-[#587B6C] shrink-0" />
@@ -490,13 +639,33 @@ export default function Feed({ user, onOpenUploadModal, onToast, setActiveTab, n
                         <span>Comments {commentsCount > 0 ? `(${commentsCount})` : ''}</span>
                       </button>
 
+                      {/* Direct Message (Instagram DM / WhatsApp style) */}
+                      <button
+                        onClick={() => onOpenDMsWithUser?.({ id: post.user_id, name: post.user_name, avatar_url: post.user_avatar })}
+                        className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl border bg-[#F5F2EB]/80 hover:bg-[#E8EFEA] text-[#2C4A3E] border-[#E2DDD1] active:scale-95 transition-all cursor-pointer min-h-[36px]"
+                        title="Send in Direct Message"
+                      >
+                        <SendHorizontal className="w-3.5 h-3.5 text-[#587B6C]" />
+                        <span className="hidden md:inline">Message</span>
+                      </button>
+
+                      {/* WhatsApp Quick Share */}
+                      <button
+                        onClick={() => handleWhatsAppShare(post)}
+                        className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl border bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border-emerald-200 active:scale-95 transition-all cursor-pointer min-h-[36px]"
+                        title="Share on WhatsApp"
+                      >
+                        <span className="text-xs">💬</span>
+                        <span className="hidden md:inline font-semibold">WhatsApp</span>
+                      </button>
+
                       {/* Share modal trigger */}
                       <button
                         onClick={() => setShareModalPost(post)}
-                        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl border bg-[#F5F2EB]/80 hover:bg-[#E8EFEA] text-[#2C4A3E] border-[#E2DDD1] active:scale-95 transition-all cursor-pointer min-h-[36px]"
+                        className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-xl border bg-[#F5F2EB]/80 hover:bg-[#E8EFEA] text-[#2C4A3E] border-[#E2DDD1] active:scale-95 transition-all cursor-pointer min-h-[36px]"
                         title="Share this action"
                       >
-                        <Share2 className="w-4 h-4 text-[#587B6C]" />
+                        <Share2 className="w-3.5 h-3.5 text-[#587B6C]" />
                         <span className="hidden sm:inline">Share</span>
                       </button>
                     </div>
@@ -643,6 +812,73 @@ export default function Feed({ user, onOpenUploadModal, onToast, setActiveTab, n
                 className="mt-3 w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer"
               >
                 🌱 Join This Action Drive
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* YouTube Shorts / Instagram Reel Video Modal */}
+      {activeReel && (
+        <div 
+          onClick={() => setActiveReel(null)}
+          className="fixed inset-0 z-50 bg-black/85 backdrop-blur-md flex items-center justify-center p-4 animate-in fade-in"
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            className="relative max-w-xs sm:max-w-sm w-full bg-[#121A15] rounded-3xl overflow-hidden border border-white/20 shadow-2xl flex flex-col"
+          >
+            {/* Reel Header */}
+            <div className="p-4 flex items-center justify-between z-20 bg-gradient-to-b from-black/80 to-transparent">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-red-600 flex items-center justify-center text-white">
+                  <Play className="w-4 h-4 fill-white" />
+                </div>
+                <div>
+                  <p className="text-white font-bold text-xs">{activeReel.creator}</p>
+                  <p className="text-emerald-400 text-[10px] font-semibold">{activeReel.tag}</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setActiveReel(null)}
+                className="w-8 h-8 rounded-full bg-white/20 text-white flex items-center justify-center text-sm font-bold hover:bg-white/30 cursor-pointer"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Video preview simulation */}
+            <div className="relative h-96 w-full bg-black group">
+              <img
+                src={activeReel.image}
+                alt={activeReel.title}
+                className="w-full h-full object-cover opacity-90"
+              />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-16 h-16 rounded-full bg-white/30 backdrop-blur-md border border-white/40 flex items-center justify-center text-white shadow-2xl hover:scale-110 transition-transform cursor-pointer">
+                  <Play className="w-8 h-8 fill-white ml-1" />
+                </div>
+              </div>
+              <div className="absolute bottom-3 right-3 px-2 py-0.5 rounded-md bg-black/70 text-white text-[10px] font-bold">
+                {activeReel.duration}
+              </div>
+            </div>
+
+            {/* Reel Footer & CTA */}
+            <div className="p-4 bg-[#121A15] text-white space-y-2">
+              <h4 className="font-display font-bold text-sm leading-tight text-white">{activeReel.title}</h4>
+              <div className="flex items-center justify-between text-xs text-white/70 pt-1">
+                <span>👁️ {activeReel.views} views</span>
+                <span className="text-emerald-400 font-medium">Pune Verified Video Proof</span>
+              </div>
+              <button
+                onClick={() => {
+                  setActiveReel(null);
+                  onOpenUploadModal();
+                }}
+                className="mt-2 w-full py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold uppercase tracking-wider flex items-center justify-center gap-2 cursor-pointer"
+              >
+                📹 Upload Your 30s Eco Reel
               </button>
             </div>
           </div>
