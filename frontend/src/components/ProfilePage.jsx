@@ -43,7 +43,7 @@ const AVAILABLE_INTERESTS = [
   'Rainwater Harvesting'
 ];
 
-export default function ProfilePage({ user, onUserUpdated, onToast, setActiveTab, onOpenUploadModal, newlyCreatedPost }) {
+export default function ProfilePage({ user, onUserUpdated, onToast, setActiveTab, onOpenUploadModal, onOpenAuthModal, newlyCreatedPost }) {
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [userPosts, setUserPosts] = useState([]);
@@ -154,6 +154,33 @@ export default function ProfilePage({ user, onUserUpdated, onToast, setActiveTab
   return (
     <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-10 py-5 sm:py-8 space-y-6 sm:space-y-8 animate-in fade-in">
       
+      {/* ── Guest Sign In / Join Prompt Banner ── */}
+      {!user && (
+        <div className="p-4 sm:p-5 rounded-2xl bg-gradient-to-r from-[#E8EFEA] to-[#D4E5DC] border border-[#7C9D8E]/40 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-xs">
+          <div className="flex items-center gap-3">
+            <span className="text-2xl sm:text-3xl">🌱</span>
+            <div>
+              <h3 className="font-bold text-[#2C4A3E] text-sm sm:text-base">You are viewing as a Pune Guest</h3>
+              <p className="text-xs text-[#587B6C]">Sign in or create a free account to track your verified eco-actions, earn Green Points, and claim rewards!</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 w-full sm:w-auto shrink-0">
+            <button
+              onClick={() => onOpenAuthModal?.('login')}
+              className="flex-1 sm:flex-initial px-4 py-2 rounded-xl text-xs font-bold text-[#2C4A3E] bg-white border border-[#E2DDD1] shadow-xs hover:bg-[#F5F2EB] cursor-pointer"
+            >
+              Sign In
+            </button>
+            <button
+              onClick={() => onOpenAuthModal?.('signup')}
+              className="flex-1 sm:flex-initial px-4 py-2 rounded-xl text-xs font-bold bg-[#2C4A3E] text-white shadow-xs hover:bg-[#1E332B] cursor-pointer"
+            >
+              Create Account (+100 pts)
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* ── 1. Profile Header Hero ── */}
       <div className="relative rounded-2xl sm:rounded-3xl overflow-hidden glass-card border border-[#E2DDD1]/80 shadow-md">
         {/* Decorative Nature Gradient Header */}

@@ -96,11 +96,11 @@ export default function Header({
           {/* Right Controls */}
           <div className="flex items-center gap-1.5 sm:gap-2.5">
 
-            {/* Direct Messages Icon Button (Instagram DM / WhatsApp) */}
+            {/* Direct Messages Icon Button (Shown for logged in, or on tablet/desktop) */}
             <button
               type="button"
               onClick={onOpenDMs}
-              className="relative p-2 rounded-2xl bg-white/90 border border-[#E2DDD1] hover:border-[#7C9D8E]/50 hover:bg-[#E8EFEA] text-[#2C4A3E] transition-all cursor-pointer shadow-xs"
+              className={`${user ? 'flex' : 'hidden sm:flex'} relative p-2 rounded-2xl bg-white/90 border border-[#E2DDD1] hover:border-[#7C9D8E]/50 hover:bg-[#E8EFEA] text-[#2C4A3E] transition-all cursor-pointer shadow-xs items-center justify-center`}
               title="Direct Messages"
             >
               <MessageCircle className="w-4 h-4 text-[#587B6C]" />
@@ -111,11 +111,11 @@ export default function Header({
               )}
             </button>
 
-            {/* Notifications Bell Icon Button (Instagram / Facebook Activity) */}
+            {/* Notifications Bell Icon Button (Shown for logged in, or on tablet/desktop) */}
             <button
               type="button"
               onClick={onOpenNotifications}
-              className="relative p-2 rounded-2xl bg-white/90 border border-[#E2DDD1] hover:border-[#7C9D8E]/50 hover:bg-[#E8EFEA] text-[#2C4A3E] transition-all cursor-pointer shadow-xs"
+              className={`${user ? 'flex' : 'hidden sm:flex'} relative p-2 rounded-2xl bg-white/90 border border-[#E2DDD1] hover:border-[#7C9D8E]/50 hover:bg-[#E8EFEA] text-[#2C4A3E] transition-all cursor-pointer shadow-xs items-center justify-center`}
               title="Notifications & Follow Requests"
             >
               <Bell className="w-4 h-4 text-[#587B6C]" />
@@ -177,23 +177,23 @@ export default function Header({
                 </button>
               </>
             ) : (
-              <>
+              <div className="flex items-center gap-1.5 sm:gap-2">
                 <button
                   type="button"
                   onClick={() => onOpenAuthModal?.('login')}
-                  className="px-3 sm:px-4 py-2 rounded-2xl text-xs font-bold text-[#2C4A3E] hover:bg-[#F5F2EB] border border-[#E2DDD1] transition-all cursor-pointer"
+                  className="px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl text-xs font-bold text-[#2C4A3E] hover:bg-[#F5F2EB] border border-[#E2DDD1] bg-white transition-all cursor-pointer shadow-xs active:scale-95 whitespace-nowrap"
                 >
                   Sign In
                 </button>
                 <button
                   type="button"
                   onClick={() => onOpenAuthModal?.('signup')}
-                  className="hidden xs:flex px-3 sm:px-4 py-2 rounded-2xl text-xs font-bold bg-[#E8EFEA] text-[#2C4A3E] border border-[#7C9D8E]/40 hover:bg-[#d8e8dd] transition-all cursor-pointer items-center gap-1.5"
+                  className="flex items-center gap-1 sm:gap-1.5 px-2.5 sm:px-3.5 py-1.5 sm:py-2 rounded-xl sm:rounded-2xl text-xs font-bold bg-[#2C4A3E] text-white hover:bg-[#1E332B] transition-all cursor-pointer shadow-xs active:scale-95 whitespace-nowrap"
                 >
-                  <UserPlus className="w-3.5 h-3.5 text-[#587B6C]" />
+                  <UserPlus className="w-3.5 h-3.5" />
                   <span>Join Free</span>
                 </button>
-              </>
+              </div>
             )}
 
             {/* Desktop Post Action Button */}

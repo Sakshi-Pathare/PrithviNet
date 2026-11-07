@@ -36,15 +36,14 @@ export default function App() {
 
   useEffect(() => {
     async function loadUser() {
-      // 1. Try restoring authenticated user from token
+      // 1. Try restoring authenticated user from token or stored profile
       const authUser = await fetchAuthMe();
       if (authUser) {
         setUser(authUser);
         return;
       }
-      // 2. Default to active Pune community profile
-      const defaultData = await fetchUserMe(1);
-      setUser(defaultData);
+      // 2. Keep guest state so mobile & desktop visitors clearly see Login & Signup
+      setUser(null);
     }
     loadUser();
   }, []);
@@ -242,6 +241,7 @@ export default function App() {
               onToast={showToast}
               setActiveTab={handleTabChange}
               onOpenUploadModal={handleOpenUploadModal}
+              onOpenAuthModal={handleOpenAuthModal}
               newlyCreatedPost={newlyCreatedPost}
             />
           </div>
@@ -253,6 +253,8 @@ export default function App() {
         activeTab={activeTab}
         setActiveTab={handleTabChange}
         onOpenUploadModal={handleOpenUploadModal}
+        user={user}
+        onOpenAuthModal={handleOpenAuthModal}
       />
 
       {/* ── Upload Modal ── */}

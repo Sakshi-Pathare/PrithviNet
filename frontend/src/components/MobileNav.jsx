@@ -1,7 +1,7 @@
 import React from 'react';
-import { Flame, Film, Compass, Users, ShoppingBag, Plus, User } from 'lucide-react';
+import { Flame, Film, ShoppingBag, Plus, User, LogIn } from 'lucide-react';
 
-export default function MobileNav({ activeTab, setActiveTab, onOpenUploadModal }) {
+export default function MobileNav({ activeTab, setActiveTab, onOpenUploadModal, user, onOpenAuthModal }) {
   return (
     <nav
       aria-label="Mobile Navigation"
@@ -44,7 +44,13 @@ export default function MobileNav({ activeTab, setActiveTab, onOpenUploadModal }
         <div className="absolute w-12 h-12 rounded-full bg-[#587B6C] opacity-30 animate-pulse-ring pointer-events-none" />
         <button
           type="button"
-          onClick={onOpenUploadModal}
+          onClick={() => {
+            if (!user) {
+              onOpenAuthModal?.('login');
+            } else {
+              onOpenUploadModal?.();
+            }
+          }}
           className="relative w-12 h-12 rounded-full bg-gradient-to-tr from-[#587B6C] to-[#7C9D8E] text-white flex items-center justify-center shadow-[0_6px_20px_rgba(88,123,108,0.45)] border-2 border-white active:scale-90 hover:scale-105 transition-all duration-200 cursor-pointer"
           aria-label="Post Eco-Action"
         >
@@ -71,21 +77,44 @@ export default function MobileNav({ activeTab, setActiveTab, onOpenUploadModal }
         </span>
       </button>
 
-      {/* Tab 4: Profile */}
-      <button
-        type="button"
-        onClick={() => setActiveTab('profile')}
-        className={`flex flex-col items-center justify-center flex-1 py-1 transition-all cursor-pointer ${
-          activeTab === 'profile' ? 'text-[#2C4A3E]' : 'text-[#8C857B] hover:text-[#2C4A3E]'
-        }`}
-      >
-        <div className={`p-1 rounded-xl transition-colors ${activeTab === 'profile' ? 'bg-[#E8EFEA] text-[#587B6C]' : ''}`}>
-          <User className="w-5 h-5" />
-        </div>
-        <span className={`text-[10px] tracking-tight mt-0.5 ${activeTab === 'profile' ? 'font-bold text-[#2C4A3E]' : 'font-medium'}`}>
-          Profile
-        </span>
-      </button>
+      {/* Tab 4: Profile or Sign In */}
+      {user ? (
+        <button
+          type="button"
+          onClick={() => setActiveTab('profile')}
+          className={`flex flex-col items-center justify-center flex-1 py-1 transition-all cursor-pointer ${
+            activeTab === 'profile' ? 'text-[#2C4A3E]' : 'text-[#8C857B] hover:text-[#2C4A3E]'
+          }`}
+        >
+          <div className={`p-0.5 rounded-full transition-transform ${activeTab === 'profile' ? 'ring-2 ring-[#587B6C]' : ''}`}>
+            {user.avatar_url ? (
+              <img
+                src={user.avatar_url}
+                alt={user.name || 'User'}
+                className="w-5 h-5 rounded-full object-cover"
+              />
+            ) : (
+              <User className="w-5 h-5" />
+            )}
+          </div>
+          <span className={`text-[10px] tracking-tight mt-0.5 ${activeTab === 'profile' ? 'font-bold text-[#2C4A3E]' : 'font-medium'}`}>
+            Profile
+          </span>
+        </button>
+      ) : (
+        <button
+          type="button"
+          onClick={() => onOpenAuthModal?.('login')}
+          className="flex flex-col items-center justify-center flex-1 py-1 transition-all cursor-pointer text-[#2C4A3E] active:scale-95"
+        >
+          <div className="p-1 rounded-xl bg-[#2C4A3E] text-white shadow-xs">
+            <LogIn className="w-4 h-4" />
+          </div>
+          <span className="text-[10px] tracking-tight mt-0.5 font-bold text-[#2C4A3E]">
+            Sign In
+          </span>
+        </button>
+      )}
     </nav>
   );
 }

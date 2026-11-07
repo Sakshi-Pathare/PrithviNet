@@ -100,34 +100,34 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, onToast, ini
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/45 backdrop-blur-sm animate-in fade-in">
-      <div className="relative w-full max-w-md rounded-3xl bg-white border border-[#E2DDD1] shadow-2xl overflow-hidden p-5 sm:p-7">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2.5 sm:p-4 bg-black/50 backdrop-blur-sm animate-in fade-in">
+      <div className="relative w-full max-w-md max-h-[90vh] overflow-y-auto overscroll-contain rounded-3xl bg-white border border-[#E2DDD1] shadow-2xl p-4 sm:p-6 custom-scrollbar">
         
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 p-2 rounded-xl text-[#8C857B] hover:text-[#2C4A3E] hover:bg-[#F5F2EB] transition-colors"
+          className="absolute top-3.5 right-3.5 sm:top-4 sm:right-4 p-2 rounded-xl text-[#8C857B] hover:text-[#2C4A3E] hover:bg-[#F5F2EB] transition-colors z-10"
         >
           <X className="w-5 h-5" />
         </button>
 
         {/* Modal Brand Header */}
-        <div className="flex items-center gap-3 mb-5">
-          <div className="w-11 h-11 rounded-2xl bg-gradient-to-br from-[#E8EFEA] to-[#D4E5DC] border border-[#7C9D8E]/40 flex items-center justify-center p-1 shadow-xs">
+        <div className="flex items-center gap-3 mb-4 sm:mb-5 pr-8">
+          <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-br from-[#E8EFEA] to-[#D4E5DC] border border-[#7C9D8E]/40 flex items-center justify-center p-1 shadow-xs shrink-0">
             <img src="/emblem.png" alt="PrithviNet" className="w-full h-full object-contain" />
           </div>
           <div>
-            <h2 className="font-display font-extrabold text-xl text-[#2C4A3E]">
+            <h2 className="font-display font-extrabold text-lg sm:text-xl text-[#2C4A3E] leading-tight">
               Prithvi<span className="text-[#587B6C]">Net</span>
             </h2>
-            <p className="text-xs text-[#8C857B] font-medium">
+            <p className="text-[11px] sm:text-xs text-[#8C857B] font-medium leading-tight mt-0.5">
               Pune Verified Environmental Action Network
             </p>
           </div>
         </div>
 
         {/* Toggle Tabs */}
-        <div className="flex rounded-2xl bg-[#F5F2EB] p-1 mb-5 border border-[#E2DDD1]">
+        <div className="flex rounded-2xl bg-[#F5F2EB] p-1 mb-4 sm:mb-5 border border-[#E2DDD1]">
           <button
             type="button"
             onClick={() => { setMode('login'); setErrorMessage(''); }}
@@ -163,14 +163,14 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, onToast, ini
 
         {/* Welcome Bonus Notice (on Signup) */}
         {mode === 'signup' && (
-          <div className="mb-4 p-3 rounded-xl bg-[#E8EFEA]/80 border border-[#7C9D8E]/30 flex items-center gap-2.5 text-xs text-[#2C4A3E]">
+          <div className="mb-4 p-2.5 sm:p-3 rounded-xl bg-[#E8EFEA]/80 border border-[#7C9D8E]/30 flex items-center gap-2 text-xs text-[#2C4A3E]">
             <Sparkles className="w-4 h-4 text-[#587B6C] shrink-0" />
             <span><strong>+100 Green Points</strong> awarded instantly upon registration!</span>
           </div>
         )}
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-3.5">
+        <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-3.5">
           {mode === 'signup' && (
             <div>
               <label className="block text-[11px] font-bold text-[#2C4A3E] uppercase tracking-wide mb-1">
@@ -183,8 +183,8 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, onToast, ini
                   required
                   value={name}
                   onChange={e => setName(e.target.value)}
-                  placeholder="e.g. Rohan Kulkarni"
-                  className="w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-[#FAF8F5] border border-[#E2DDD1] text-xs text-[#2C4A3E] focus:outline-none focus:border-[#587B6C] focus:bg-white transition-all"
+                  placeholder="e.g. Sakshi Pathare"
+                  className="w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-[#FAF8F5] border border-[#E2DDD1] text-sm sm:text-xs text-[#2C4A3E] focus:outline-none focus:border-[#587B6C] focus:bg-white transition-all"
                 />
               </div>
             </div>
@@ -202,7 +202,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, onToast, ini
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 placeholder="your.email@example.com"
-                className="w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-[#FAF8F5] border border-[#E2DDD1] text-xs text-[#2C4A3E] focus:outline-none focus:border-[#587B6C] focus:bg-white transition-all"
+                className="w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-[#FAF8F5] border border-[#E2DDD1] text-sm sm:text-xs text-[#2C4A3E] focus:outline-none focus:border-[#587B6C] focus:bg-white transition-all"
               />
             </div>
           </div>
@@ -219,7 +219,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, onToast, ini
                 value={password}
                 onChange={e => setPassword(e.target.value)}
                 placeholder={mode === 'signup' ? 'Min 6 characters' : 'Enter your password'}
-                className="w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-[#FAF8F5] border border-[#E2DDD1] text-xs text-[#2C4A3E] focus:outline-none focus:border-[#587B6C] focus:bg-white transition-all"
+                className="w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-[#FAF8F5] border border-[#E2DDD1] text-sm sm:text-xs text-[#2C4A3E] focus:outline-none focus:border-[#587B6C] focus:bg-white transition-all"
               />
             </div>
           </div>
@@ -237,7 +237,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, onToast, ini
                     value={neighborhood}
                     onChange={e => setNeighborhood(e.target.value)}
                     placeholder="e.g. Alandi, Kothrud, Baner, Koregaon Park"
-                    className="w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-[#FAF8F5] border border-[#E2DDD1] text-xs text-[#2C4A3E] focus:outline-none focus:border-[#587B6C] focus:bg-white transition-all"
+                    className="w-full pl-9 pr-3.5 py-2.5 rounded-xl bg-[#FAF8F5] border border-[#E2DDD1] text-sm sm:text-xs text-[#2C4A3E] focus:outline-none focus:border-[#587B6C] focus:bg-white transition-all"
                   />
                 </div>
               </div>
@@ -249,7 +249,7 @@ export default function AuthModal({ isOpen, onClose, onAuthSuccess, onToast, ini
                 <select
                   value={communityGroupId}
                   onChange={e => setCommunityGroupId(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-xl bg-[#FAF8F5] border border-[#E2DDD1] text-xs text-[#2C4A3E] focus:outline-none focus:border-[#587B6C] focus:bg-white transition-all"
+                  className="w-full px-3 py-2.5 rounded-xl bg-[#FAF8F5] border border-[#E2DDD1] text-sm sm:text-xs text-[#2C4A3E] focus:outline-none focus:border-[#587B6C] focus:bg-white transition-all"
                 >
                   <option value={1}>MITAOE Green Warriors (Pune Campus)</option>
                   <option value={2}>Pune Clean Air & River Volunteers (Pune Metro)</option>
